@@ -3,6 +3,7 @@ const Booking = require('../models/Booking');
 const Payment = require('../models/Payment');
 const multer = require('multer');
 const path = require('path');
+const emailService = require('../services/emailService');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -179,6 +180,31 @@ exports.processPayment = async (req, res) => {
     
     // Clear the cart after successful payment
     await Cart.findOneAndDelete({ user: req.session.user.id });
+
+    // Send order confirmation email
+    try {
+      await emailService.sendOrderConfirmation({
+        email: req.session.user.email,
+        name: req.session.user.name,
+        orderDetails: {
+          transactionId: payment.transactionId,
+          total: total,
+          subtotal: subtotal,
+          tax: tax,
+          serviceFee: serviceFee,
+          bookings: bookings.map(booking => ({
+            car: booking.car,
+            pickupDate: booking.pickupDate,
+            returnDate: booking.returnDate,
+            pickupLocation: booking.pickupLocation,
+            price: booking.price
+          }))
+        }
+      });
+    } catch (emailError) {
+      console.error('Failed to send order confirmation email:', emailError);
+      // Don't fail the payment process if email fails
+    }
     
     res.json({ 
       success: true, 

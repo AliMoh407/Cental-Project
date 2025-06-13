@@ -5,9 +5,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const https = require('https');
 const http = require('http');
-const fs = require('fs');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -23,16 +21,11 @@ const { sessionToLocals } = require('./middleware/auth');
 
 const app = express();
 const port = process.env.PORT || 3000;
-const httpsPort = process.env.HTTPS_PORT || 3443;
-const isDevelopment = process.env.NODE_ENV !== 'production';
 
-// === MongoDB Connection ===
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => console.log("✅ MongoDB Atlas connected via .env"))
-.catch(err => console.error("❌ MongoDB connection error:", err));
+// === Basic Middleware ===
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // === Session Configuration ===
 app.use(session({
@@ -45,51 +38,32 @@ app.use(session({
     touchAfter: 24 * 3600 // Lazy session update
   }),
   cookie: {
-    secure: !isDevelopment, // Only use secure cookies in production
+    secure: false, // Must be false for HTTP
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    sameSite: 'strict' // CSRF protection
+    sameSite: 'lax'
   },
-  name: 'sessionId', // Change default session name for security
-  rolling: true // Reset expiration on activity
+  name: 'sessionId'
 }));
 
-// === Security Headers Middleware ===
-app.use((req, res, next) => {
-  // Prevent XSS attacks
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  
-  // Content Security Policy
-  res.setHeader('Content-Security-Policy', 
-    "default-src 'self'; " +
-    "script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
-    "style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; " +
-    "font-src 'self' https://cdnjs.cloudflare.com; " +
-    "img-src 'self' data: https:; " +
-    "connect-src 'self'"
-  );
-  
-  // HSTS (HTTP Strict Transport Security) - only in production
-  if (!isDevelopment) {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
-  }
-  
-  // Remove X-Powered-By header
-  res.removeHeader('X-Powered-By');
-  
-  next();
-});
-
-// === Middleware ===
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json()); // Add JSON parsing for AJAX requests
-app.use(express.static(path.join(__dirname, 'public')));
+// === View Engine Setup ===
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Apply session middleware for templates
+// === Security Headers ===
+app.use((req, res, next) => {
+  // Remove any HTTPS-related headers
+  res.removeHeader('Strict-Transport-Security');
+  res.removeHeader('X-Powered-By');
+  
+  // Add basic security headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  next();
+});
+
+// === Apply Session Middleware ===
 app.use(sessionToLocals);
 
 // === Routes ===
@@ -101,51 +75,52 @@ app.use('/', contactRoutes);
 app.use('/cart', cartRoutes);
 app.use('/payment', paymentRoutes);
 
-console.log('✅ Currency routes loaded successfully!');
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).send("❌ Page Not Found");
+// === Error Handling ===
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).render('error', {
+    title: 'Error - Car Rental',
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err : {}
+  });
 });
 
-// Start server based on environment
-if (isDevelopment) {
-  // Development mode - HTTP only
-  app.listen(port, () => {
-    console.log(`🚗 Car Rental app running in DEVELOPMENT mode at http://localhost:${port}`);
-    console.log('⚠️  Note: HTTPS is disabled in development mode');
+// === 404 Handler ===
+app.use((req, res) => {
+  res.status(404).render('error', {
+    title: 'Not Found - Car Rental',
+    message: 'Page not found',
+    error: {}
   });
-} else {
-  // Production mode - try to start HTTPS server
-  try {
-    const httpsOptions = {
-      key: fs.readFileSync(process.env.SSL_KEY_PATH),
-      cert: fs.readFileSync(process.env.SSL_CERT_PATH)
-    };
+});
 
-    // Create HTTPS server
-    https.createServer(httpsOptions, app).listen(httpsPort, () => {
-      console.log(`🚗 Car Rental app running securely at https://localhost:${httpsPort}`);
-    });
-
-    // Create HTTP server that redirects to HTTPS
-    http.createServer((req, res) => {
-      res.writeHead(301, { 
-        'Location': `https://${req.headers.host}${req.url}` 
-      });
-      res.end();
-    }).listen(port, () => {
-      console.log(`🔄 HTTP server redirecting to HTTPS on port ${port}`);
-    });
-  } catch (error) {
-    console.error('❌ SSL certificates not found. HTTPS server not started.');
-    console.error('Please ensure SSL_KEY_PATH and SSL_CERT_PATH are set in your .env file');
-    console.error('Falling back to HTTP only...');
+// === Start Server ===
+try {
+  // Connect to MongoDB first
+  mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+  })
+  .then(() => {
+    console.log("✅ MongoDB Atlas connected successfully");
     
-    // Fallback to HTTP only
-    app.listen(port, () => {
+    // Create HTTP server
+    const server = http.createServer(app);
+    
+    // Start the server after MongoDB connects
+    server.listen(port, '0.0.0.0', () => {
       console.log(`🚗 Car Rental app running at http://localhost:${port}`);
+      console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+      console.log(`🔗 MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
+      console.log(`�� Session Secret: ${process.env.SESSION_SECRET ? 'Configured' : 'Not configured'}`);
     });
-  }
+  })
+  .catch(err => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
+} catch (error) {
+  console.error("❌ Server startup error:", error);
+  process.exit(1);
 }
 
