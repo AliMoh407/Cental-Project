@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .success-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 70vh;
+            text-align: center;
+        }
+
+        .success-icon {
+            font-size: 5em;
+            color: var(--success);
+            margin-bottom: 20px;
+            animation: checkmark 0.6s ease-in-out;
+        }
+
+        @keyframes checkmark {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .success-message {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 40px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-100);
+            margin-bottom: 30px;
+        }
+
+        .success-message h1 {
+            font-size: 2.5em;
+            color: var(--success);
+            margin-bottom: 15px;
+        }
+
+        .success-message p {
+            font-size: 1.2em;
+            color: var(--gray-600);
+            margin-bottom: 20px;
+        }
+
+        .transaction-details {
+            background: var(--gray-50);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .detail-value {
+            color: var(--gray-900);
+        }
+
+        .bookings-summary {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-100);
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .bookings-summary h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--gray-900);
+        }
+
+        .booking-item {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 15px;
+            background: var(--gray-50);
+        }
+
+        .booking-image {
+            width: 100px;
+            height: 70px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+        }
+
+        .booking-details h3 {
+            margin: 0 0 8px 0;
+            color: var(--gray-900);
+        }
+
+        .booking-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--gray-600);
+            font-size: 0.9em;
+        }
+
+        .info-item i {
+            color: var(--primary-blue);
+            width: 16px;
+        }
+
+        .booking-price {
+            margin-left: auto;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 30px;
+            border-radius: var(--radius-lg);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1em;
+            transition: all var(--transition-normal);
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 2px solid var(--gray-200);
+        }
+
+        .btn-secondary:hover {
+            background: var(--gray-200);
+            transform: translateY(-2px);
+        }
+
+        .next-steps {
+            background: rgba(37, 99, 235, 0.1);
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .next-steps h3 {
+            color: var(--primary-blue);
+            margin-bottom: 15px;
+        }
+
+        .next-steps ul {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .next-steps li {
+            margin-bottom: 10px;
+            color: var(--gray-700);
+        }
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .booking-item {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .booking-info {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body data-page="payment-success">
+    <%- include('../partials/header') %>
+
+    <main class="success-container">
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+
+        <div class="success-message">
+            <h1>Payment Successful!</h1>
+            <p>Thank you for your payment. Your car rental booking has been confirmed.</p>
+            
+            <% if (payment) { %>
+                <div class="transaction-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Transaction ID:</span>
+                        <span class="detail-value"><%= payment.transactionId %></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount Paid:</span>
+                        <span class="detail-value">$<%= payment.amount.toFixed(2) %></span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Payment Method:</span>
+                        <span class="detail-value">
+                            <% if (payment.paymentMethod === 'credit_card') { %>
+                                Credit Card ending in <%= payment.cardLastFour %>
+                            <% } else { %>
+                                <%= payment.paymentMethod.replace('_', ' ').toUpperCase() %>
+                            <% } %>
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">ID Verification:</span>
+                        <span class="detail-value">
+                            <i class="fas fa-check-circle" style="color: var(--success); margin-right: 5px;"></i>
+                            ID Document Uploaded
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date:</span>
+                        <span class="detail-value"><%= new Date(payment.createdAt).toLocaleDateString() %></span>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+
+        <% if (bookings && bookings.length > 0) { %>
+            <div class="bookings-summary">
+                <h2><i class="fas fa-calendar-check"></i> Your Confirmed Bookings</h2>
+                
+                <% bookings.forEach(booking => { %>
+                    <div class="booking-item">
+                        <img src="<%= booking.car.image %>" alt="<%= booking.car.brand %> <%= booking.car.model %>" class="booking-image">
+                        
+                        <div class="booking-details">
+                            <h3><%= booking.car.brand %> <%= booking.car.model %></h3>
+                            <div class="booking-info">
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-check"></i>
+                                    <span>Pickup: <%= new Date(booking.pickupDate).toLocaleDateString() %></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <span>Return: <%= new Date(booking.returnDate).toLocaleDateString() %></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span><%= booking.pickupLocation %></span>
+                                </div>
+                                <div class="info-item">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Status: <%= booking.status.charAt(0).toUpperCase() + booking.status.slice(1) %></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="booking-price">$<%= booking.price %></div>
+                    </div>
+                <% }); %>
+            </div>
+        <% } %>
+
+        <div class="action-buttons">
+            <a href="/" class="btn-action btn-primary">
+                <i class="fas fa-home"></i>
+                Back to Home
+            </a>
+            
+            <a href="/bookings" class="btn-action btn-secondary">
+                <i class="fas fa-calendar-alt"></i>
+                View All Bookings
+            </a>
+        </div>
+
+        <div class="next-steps">
+            <h3><i class="fas fa-info-circle"></i> What's Next?</h3>
+            <ul>
+                <li><strong>Confirmation Email:</strong> You'll receive a detailed booking confirmation via email shortly</li>
+                <li><strong>Pickup Instructions:</strong> Please bring a valid driver's license and credit card for pickup</li>
+                <li><strong>Contact Us:</strong> If you have any questions, feel free to contact our support team</li>
+                <li><strong>Cancellation:</strong> You can cancel or modify your booking up to 24 hours before pickup</li>
+            </ul>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        // Auto-redirect after 30 seconds (optional)
+        setTimeout(() => {
+            const shouldRedirect = confirm('Would you like to go back to the homepage?');
+            if (shouldRedirect) {
+                window.location.href = '/';
+            }
+        }, 30000);
+    </script>
+</body>
+</html> 

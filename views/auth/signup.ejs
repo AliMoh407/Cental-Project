@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Car Rental</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Signup Page Specific Styles */
+        .signup-main {
+            margin-top: 80px;
+            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--spacing-xl) var(--spacing-lg);
+        }
+
+        .signup-container {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            border: 1px solid var(--gray-100);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+        }
+
+        .signup-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-blue), var(--accent-orange));
+        }
+
+        .signup-header {
+            background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+            padding: var(--spacing-3xl) var(--spacing-2xl) var(--spacing-xl);
+            text-align: center;
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .signup-logo {
+            font-size: 2.5rem;
+            margin-bottom: var(--spacing-lg);
+            background: linear-gradient(135deg, var(--primary-blue), var(--accent-orange));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .signup-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .signup-subtitle {
+            color: var(--gray-600);
+            font-size: 1rem;
+        }
+
+        .signup-body {
+            padding: var(--spacing-3xl) var(--spacing-2xl);
+        }
+
+        .error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: var(--spacing-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 1.125rem;
+            z-index: 2;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--spacing-lg);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            background: var(--gray-50);
+            transition: all var(--transition-normal);
+            font-family: var(--font-primary);
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .password-input {
+            padding-right: 3rem;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: var(--spacing-lg);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            cursor: pointer;
+            font-size: 1.125rem;
+            z-index: 2;
+            transition: color var(--transition-fast);
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-blue);
+        }
+
+        .signup-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary-blue), var(--primary-light));
+            color: var(--white);
+            border: none;
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-radius: var(--radius-lg);
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .signup-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .signup-btn:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .signup-footer {
+            text-align: center;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--gray-200);
+            color: var(--gray-600);
+        }
+
+        .login-link {
+            color: var(--primary-blue);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color var(--transition-fast);
+        }
+
+        .login-link:hover {
+            color: var(--primary-dark);
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: var(--spacing-xl);
+            left: var(--spacing-xl);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            color: var(--gray-600);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color var(--transition-fast);
+            z-index: 10;
+        }
+
+        .back-to-home:hover {
+            color: var(--primary-blue);
+        }
+
+        .password-requirements {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-lg);
+            margin-top: var(--spacing-sm);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            font-size: 0.875rem;
+        }
+
+        /* Two-column layout for larger screens */
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .signup-main {
+                padding: var(--spacing-lg) var(--spacing-md);
+            }
+
+            .signup-container {
+                max-width: 100%;
+            }
+
+            .signup-header {
+                padding: var(--spacing-2xl) var(--spacing-lg) var(--spacing-lg);
+            }
+
+            .signup-body {
+                padding: var(--spacing-2xl) var(--spacing-lg);
+            }
+
+            .signup-title {
+                font-size: 1.75rem;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Validation Styling */
+        .input-error {
+            border-color: var(--error) !important;
+            background-color: rgba(239, 68, 68, 0.05) !important;
+        }
+        
+        .field-error {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .field-error i {
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+    <main class="signup-main">
+        <a href="/" class="back-to-home">
+            <i class="fas fa-arrow-left"></i>
+            Back to Home
+        </a>
+
+        <div class="signup-container">
+            <div class="signup-header">
+                <div class="signup-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h1 class="signup-title">Join Us Today</h1>
+                <p class="signup-subtitle">Create your account to get started</p>
+            </div>
+
+            <div class="signup-body">
+                <% if (error) { %>
+                    <div class="error-alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <form action="/signup" method="POST" id="signupForm">
+                    <div class="form-group">
+                        <label for="name">Full Name</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="text" 
+                                id="name" 
+                                name="name" 
+                                class="form-input <%= errors && errors.name ? 'input-error' : '' %>"
+                                placeholder="Enter your full name"
+                                value="<%= formData && formData.name ? formData.name : '' %>"
+                                required
+                            >
+                            <% if (errors && errors.name) { %>
+                                <div class="field-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <%= errors.name %>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <div class="input-wrapper">
+                            <input 
+                                type="email" 
+                                id="email" 
+                                name="email" 
+                                class="form-input <%= errors && errors.email ? 'input-error' : '' %>"
+                                placeholder="Enter your email address"
+                                value="<%= formData && formData.email ? formData.email : '' %>"
+                                required
+                            >
+                            <% if (errors && errors.email) { %>
+                                <div class="field-error">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    <%= errors.email %>
+                                </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="password" 
+                                    id="password" 
+                                    name="password" 
+                                    class="form-input password-input <%= errors && errors.password ? 'input-error' : '' %>"
+                                    placeholder="Choose a password"
+                                    required
+                                >
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('password')"></i>
+                                <% if (errors && errors.password) { %>
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= errors.password %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <div class="input-wrapper">
+                                <input 
+                                    type="password" 
+                                    id="confirmPassword" 
+                                    name="confirmPassword" 
+                                    class="form-input password-input <%= errors && errors.confirmPassword ? 'input-error' : '' %>"
+                                    placeholder="Confirm your password"
+                                    required
+                                >
+                                <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword')"></i>
+                                <% if (errors && errors.confirmPassword) { %>
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= errors.confirmPassword %>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="password-requirements">
+                        <div style="font-weight: 600; margin-bottom: 8px;">
+                            <i class="fas fa-shield-alt"></i> Password Requirements:
+                        </div>
+                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
+                            <li>At least 8 characters long</li>
+                            <li>One uppercase letter (A-Z)</li>
+                            <li>One lowercase letter (a-z)</li>
+                            <li>One number (0-9)</li>
+                            <li>One special character (!@#$%^&*)</li>
+                            <li>Avoid common passwords</li>
+                        </ul>
+                    </div>
+
+                    <button type="submit" class="signup-btn" id="signupBtn">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </form>
+
+                <div class="signup-footer">
+                    <p>Already have an account? <a href="/login" class="login-link">Sign in here</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Password toggle functionality
+        function togglePassword(fieldId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleIcon = passwordInput.parentElement.querySelector('.password-toggle');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        }
+
+        // Form submission with loading state
+        document.getElementById('signupForm').addEventListener('submit', function() {
+            const signupBtn = document.getElementById('signupBtn');
+            signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+            signupBtn.disabled = true;
+        });
+
+        // Password matching validation
+        document.getElementById('confirmPassword').addEventListener('input', function() {
+            const password = document.getElementById('password').value;
+            const confirmPassword = this.value;
+            
+            if (password !== confirmPassword) {
+                this.style.borderColor = 'var(--error)';
+                this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            } else {
+                this.style.borderColor = 'var(--success)';
+                this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+            }
+        });
+
+        // Form validation enhancement
+        const form = document.getElementById('signupForm');
+        const inputs = form.querySelectorAll('input[required]');
+        
+        inputs.forEach(input => {
+            input.addEventListener('invalid', function() {
+                this.style.borderColor = 'var(--error)';
+                this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+            });
+            
+            input.addEventListener('input', function() {
+                if (this.validity.valid) {
+                    this.style.borderColor = 'var(--success)';
+                    this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body data-page="home">
+    <%- include('partials/header') %>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Find Your Perfect Ride</h1>
+                <p>Choose from our wide selection of premium vehicles</p>
+                <a href="#search" class="btn btn-secondary btn-large">
+                    <i class="fas fa-search"></i> Start Your Search
+                </a>
+            </div>
+        </section>
+
+        <!-- Search Section -->
+        <section id="search" class="search-section">
+            <div class="search-container">
+                <div class="search-box">
+                    <h2 class="search-title">🚗 Search & Filter Cars</h2>
+                    <input type="text" id="car-search" class="search-input" placeholder="Search by brand, model, or features...">
+                    
+                    <!-- Advanced Filters -->
+                    <form id="filter-form">
+                        <div class="filter-row">
+                            <div class="filter-group">
+                                <label for="brand">Brand</label>
+                                <select name="brand" id="brand">
+                                    <option value="">All Brands</option>
+                                    <option value="Toyota">Toyota</option>
+                                    <option value="Honda">Honda</option>
+                                    <option value="Ford">Ford</option>
+                                    <option value="Mercedes">Mercedes</option>
+                                    <option value="Tesla">Tesla</option>
+                                    <option value="Chevrolet">Chevrolet</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="minPrice">Min Price</label>
+                                <input type="number" name="minPrice" id="minPrice" placeholder="$0">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="maxPrice">Max Price</label>
+                                <input type="number" name="maxPrice" id="maxPrice" placeholder="$1000">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="year">Year</label>
+                                <select name="year" id="year">
+                                    <option value="">Any Year</option>
+                                    <option value="2024">2024</option>
+                                    <option value="2023">2023</option>
+                                    <option value="2022">2022</option>
+                                    <option value="2021">2021</option>
+                                    <option value="2020">2020</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="available">Availability</label>
+                                <select name="available" id="available">
+                                    <option value="">All</option>
+                                    <option value="true">Available</option>
+                                    <option value="false">Not Available</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center;">
+                            <button type="submit" class="btn-filter">
+                                <i class="fas fa-filter"></i> Apply Filters
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Loading Indicator -->
+                <div id="loading" class="loading">
+                    <div>
+                        <i class="fas fa-spinner"></i>
+                        <p>Searching cars...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Cars Section -->
+        <section class="featured-cars">
+            <div class="container">
+                <h2>Our Premium Fleet</h2>
+                
+                <!-- Cars Display Container -->
+                <div id="cars-container" class="cars-grid">
+                <% cars.forEach(car => { %>
+                        <div class="car-card" data-car-id="<%= car._id %>">
+                            <img src="<%= car.image %>" alt="<%= car.brand %> <%= car.model %>" loading="lazy">
+                            <div class="car-info">
+                                <h3><%= car.brand %> <%= car.model %></h3>
+                                <p class="year"><%= car.year %></p>
+                                <p class="price">$<%= car.price %>/day</p>
+                                <div class="availability <%= car.available ? 'available' : 'unavailable' %>">
+                                    <%= car.available ? 'Available' : 'Not Available' %>
+                                </div>
+                                <button class="btn btn-primary" onclick="viewCarDetails('<%= car._id %>')">
+                                    <i class="fas fa-eye"></i> View Details
+                                </button>
+                            </div>
+                    </div>
+                <% }); %>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <%- include('partials/footer') %>
+
+    <!-- Include the AJAX features -->
+    <script src="/js/ajax-features.js"></script>
+
+    <script>
+        function viewCarDetails(carId) {
+            window.location.href = `/car/${carId}`;
+        }
+        
+        // Initialize with all cars on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('Homepage with AJAX search loaded');
+        });
+    </script>
+</body>
+</html>

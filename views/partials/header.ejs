@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cental - Car Rental</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-container">
+            <!-- Logo Section -->
+            <div class="logo-section">
+                <a href="/" class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-car-side"></i>
+                    </div>
+                    <div class="logo-text">
+                        <span class="logo-main">Cental</span>
+                        <span class="logo-sub">Car Rental</span>
+                    </div>
+                </a>
+            </div>
+            
+            <!-- Main Navigation -->
+            <nav class="main-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="/" class="nav-link <%= currentPage === 'home' ? 'active' : '' %>">
+                            <i class="fas fa-home"></i>
+                            <span>Home</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/about" class="nav-link <%= currentPage === 'about' ? 'active' : '' %>">
+                            <i class="fas fa-info-circle"></i>
+                            <span>About Us</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/contact" class="nav-link <%= currentPage === 'contact' ? 'active' : '' %>">
+                            <i class="fas fa-envelope"></i>
+                            <span>Contact Us</span>
+                        </a>
+                    </li>
+                    
+                    <% if (isLoggedIn && isAdmin) { %>
+                        <li class="nav-item">
+                            <a href="/admin/dashboard" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                    <% } %>
+                </ul>
+            </nav>
+
+            <!-- User Section -->
+            <div class="user-section">
+                <% if (isLoggedIn) { %>
+                    <!-- Cart Icon -->
+                    <a href="/cart" class="cart-link">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span class="cart-count" style="display: none;">0</span>
+                    </a>
+                    
+                    <!-- User Profile Dropdown -->
+                    <div class="user-menu">
+                        <button class="user-trigger" onclick="toggleUserMenu()" aria-label="User menu">
+                            <div class="user-avatar">
+                                <i class="fas fa-user-circle"></i>
+                            </div>
+                            <div class="user-info">
+                                <span class="user-name"><%= user.name || user.email.split('@')[0] %></span>
+                                <span class="user-role"><%= isAdmin ? 'Admin' : 'Member' %></span>
+                            </div>
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </button>
+                        
+                        <div class="user-dropdown" id="userDropdown">
+                            <div class="dropdown-header">
+                                <div class="dropdown-user-info">
+                                    <i class="fas fa-user-circle"></i>
+                                    <div>
+                                        <span class="dropdown-name"><%= user.name || user.email.split('@')[0] %></span>
+                                        <span class="dropdown-email"><%= user.email %></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dropdown-menu">
+                                <a href="/profile" class="dropdown-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>My Profile</span>
+                                </a>
+                                <a href="/bookings" class="dropdown-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>My Bookings</span>
+                                </a>
+                                <% if (isAdmin) { %>
+                                    <a href="/admin/cars/add" class="dropdown-item">
+                                        <i class="fas fa-plus-circle"></i>
+                                        <span>Add Car</span>
+                                    </a>
+                                <% } %>
+                                <div class="dropdown-divider"></div>
+                                <a href="/logout" class="dropdown-item logout-item">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span>Sign Out</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                <% } else { %>
+                    <!-- Auth Buttons for Guests -->
+                    <div class="auth-buttons">
+                        <a href="/login" class="btn-auth btn-login">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Sign In</span>
+                        </a>
+                        <a href="/signup" class="btn-auth btn-signup">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Sign Up</span>
+                        </a>
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <button class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Overlay -->
+        <div class="mobile-nav-overlay" id="mobileNavOverlay" onclick="closeMobileMenu()"></div>
+        
+        <!-- Mobile Navigation -->
+        <nav class="mobile-nav" id="mobileNav">
+            <div class="mobile-nav-header">
+                <div class="mobile-logo">
+                    <i class="fas fa-car-side"></i>
+                    <span>Cental</span>
+                </div>
+                <button class="mobile-close" onclick="closeMobileMenu()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mobile-nav-content">
+                <% if (isLoggedIn) { %>
+                    <div class="mobile-user-info">
+                        <div class="mobile-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="mobile-user-details">
+                            <span class="mobile-user-name"><%= user.name || user.email.split('@')[0] %></span>
+                            <span class="mobile-user-email"><%= user.email %></span>
+                            <span class="mobile-user-badge"><%= isAdmin ? 'Admin' : 'Member' %></span>
+                        </div>
+                    </div>
+                <% } %>
+                
+                <ul class="mobile-nav-list">
+                    <li><a href="/" onclick="closeMobileMenu()" class="mobile-nav-link">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </a></li>
+                    <li><a href="/about" onclick="closeMobileMenu()" class="mobile-nav-link">
+                        <i class="fas fa-info-circle"></i>
+                        <span>About Us</span>
+                    </a></li>
+                    <li><a href="/contact" onclick="closeMobileMenu()" class="mobile-nav-link">
+                        <i class="fas fa-envelope"></i>
+                        <span>Contact Us</span>
+                    </a></li>
+                    
+                    <% if (isLoggedIn) { %>
+                        <li><a href="/cart" onclick="closeMobileMenu()" class="mobile-nav-link">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span>My Cart</span>
+                        </a></li>
+                        <% if (isAdmin) { %>
+                            <li><a href="/admin/dashboard" onclick="closeMobileMenu()" class="mobile-nav-link">
+                                <i class="fas fa-tachometer-alt"></i>
+                                <span>Dashboard</span>
+                            </a></li>
+                            <li><a href="/admin/cars/add" onclick="closeMobileMenu()" class="mobile-nav-link">
+                                <i class="fas fa-plus-circle"></i>
+                                <span>Add Car</span>
+                            </a></li>
+                        <% } %>
+                        <li class="nav-divider"></li>
+                        <li><a href="/profile" onclick="closeMobileMenu()" class="mobile-nav-link">
+                            <i class="fas fa-user"></i>
+                            <span>My Profile</span>
+                        </a></li>
+                        <li><a href="/bookings" onclick="closeMobileMenu()" class="mobile-nav-link">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>My Bookings</span>
+                        </a></li>
+                        <li class="nav-divider"></li>
+                        <li><a href="/logout" onclick="closeMobileMenu()" class="mobile-nav-link logout-link">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span>Sign Out</span>
+                        </a></li>
+                    <% } else { %>
+                        <li class="nav-divider"></li>
+                        <li><a href="/login" onclick="closeMobileMenu()" class="mobile-nav-link">
+                            <i class="fas fa-sign-in-alt"></i>
+                            <span>Sign In</span>
+                        </a></li>
+                        <li><a href="/signup" onclick="closeMobileMenu()" class="mobile-nav-link signup-link">
+                            <i class="fas fa-user-plus"></i>
+                            <span>Sign Up</span>
+                        </a></li>
+                    <% } %>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <style>
+    /* ================================
+       MODERN NAVIGATION BAR STYLES
+       ================================ */
+
+    .main-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(229, 231, 235, 0.8);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        transition: all var(--transition-normal);
+    }
+
+    .header-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 var(--spacing-xl);
+        height: 80px;
+    }
+
+    /* ================================
+       LOGO SECTION
+       ================================ */
+
+    .logo-section .logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        text-decoration: none;
+        transition: transform var(--transition-normal);
+    }
+
+    .logo-section .logo:hover {
+        transform: translateY(-2px);
+    }
+
+    .logo-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-orange));
+        border-radius: var(--radius-xl);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-size: 1.5rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-main {
+        font-size: 1.75rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, var(--primary-blue), var(--accent-orange));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1.2;
+    }
+
+    .logo-sub {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    /* ================================
+       MAIN NAVIGATION
+       ================================ */
+
+    .main-nav {
+        display: flex;
+        align-items: center;
+    }
+
+    .nav-list {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: var(--gray-700);
+        font-weight: 600;
+        font-size: 0.95rem;
+        transition: all var(--transition-normal);
+        position: relative;
+    }
+
+    .nav-link:hover {
+        background: var(--gray-100);
+        color: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+
+    .nav-link.active {
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-light));
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .nav-link i {
+        font-size: 1.1rem;
+    }
+
+    /* ================================
+       CART ICON
+       ================================ */
+
+    .cart-link {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 45px;
+        height: 45px;
+        background: var(--gray-100);
+        border-radius: var(--radius-lg);
+        color: var(--gray-700);
+        text-decoration: none;
+        transition: all var(--transition-normal);
+        margin-right: var(--spacing-lg);
+    }
+
+    .cart-link:hover {
+        background: var(--primary-blue);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .cart-link i {
+        font-size: 1.2rem;
+    }
+
+    .cart-count {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--error);
+        color: var(--white);
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 2px solid var(--white);
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+        70% {
+            box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+        }
+        100% {
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+        }
+    }
+
+    /* ================================
+       USER SECTION
+       ================================ */
+
+    .user-section {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    /* User Menu */
+    .user-menu {
+        position: relative;
+    }
+
+    .user-trigger {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-sm) var(--spacing-lg);
+        background: var(--gray-50);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-xl);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+        font-family: inherit;
+    }
+
+    .user-trigger:hover {
+        background: var(--white);
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+    }
+
+    .user-avatar i {
+        font-size: 2rem;
+        color: var(--primary-blue);
+    }
+
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1px;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--gray-900);
+        font-size: 0.9rem;
+        line-height: 1.2;
+    }
+
+    .user-role {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 500;
+    }
+
+    .dropdown-arrow {
+        color: var(--gray-400);
+        font-size: 0.8rem;
+        transition: transform var(--transition-fast);
+    }
+
+    .user-trigger:hover .dropdown-arrow {
+        transform: rotate(180deg);
+    }
+
+    /* User Dropdown */
+    .user-dropdown {
+        position: absolute;
+        top: calc(100% + var(--spacing-sm));
+        right: 0;
+        min-width: 280px;
+        background: var(--white);
+        border-radius: var(--radius-xl);
+        box-shadow: var(--shadow-2xl);
+        border: 1px solid var(--gray-200);
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all var(--transition-normal);
+        z-index: 1100;
+    }
+
+    .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-header {
+        padding: var(--spacing-lg);
+        border-bottom: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    }
+
+    .dropdown-user-info {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .dropdown-user-info i {
+        font-size: 2.5rem;
+        color: var(--primary-blue);
+    }
+
+    .dropdown-name {
+        display: block;
+        font-weight: 700;
+        color: var(--gray-900);
+        font-size: 1rem;
+    }
+
+    .dropdown-email {
+        display: block;
+        font-size: 0.875rem;
+        color: var(--gray-600);
+    }
+
+    .dropdown-menu {
+        padding: var(--spacing-sm);
+    }
+
+    .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: var(--gray-700);
+        font-weight: 500;
+        transition: all var(--transition-fast);
+    }
+
+    .dropdown-item:hover {
+        background: var(--gray-100);
+        color: var(--primary-blue);
+        transform: translateX(4px);
+    }
+
+    .dropdown-item.logout-item:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: var(--spacing-sm) 0;
+    }
+
+    /* Auth Buttons */
+    .auth-buttons {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+    }
+
+    .btn-auth {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
+        padding: var(--spacing-md) var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all var(--transition-normal);
+        border: 2px solid transparent;
+    }
+
+    .btn-login {
+        color: var(--primary-blue);
+        background: transparent;
+        border-color: var(--primary-blue);
+    }
+
+    .btn-login:hover {
+        background: var(--primary-blue);
+        color: var(--white);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .btn-signup {
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-light));
+        color: var(--white);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-signup:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    /* ================================
+       MOBILE MENU
+       ================================ */
+
+    .mobile-menu-toggle {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        background: var(--gray-100);
+        border: 2px solid var(--gray-200);
+        border-radius: var(--radius-lg);
+        cursor: pointer;
+        transition: all var(--transition-normal);
+    }
+
+    .mobile-menu-toggle:hover {
+        background: var(--primary-blue);
+        border-color: var(--primary-blue);
+    }
+
+    .hamburger-line {
+        width: 20px;
+        height: 2px;
+        background: var(--gray-700);
+        transition: all var(--transition-normal);
+        margin: 2px 0;
+    }
+
+    .mobile-menu-toggle:hover .hamburger-line {
+        background: var(--white);
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+        transform: rotate(45deg) translate(5px, 5px);
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+        opacity: 0;
+    }
+
+    .mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+        transform: rotate(-45deg) translate(7px, -6px);
+    }
+
+    .mobile-nav-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        opacity: 0;
+        visibility: hidden;
+        transition: all var(--transition-normal);
+        z-index: 1050;
+    }
+
+    .mobile-nav-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    .mobile-nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 320px;
+        height: 100vh;
+        background: var(--white);
+        box-shadow: var(--shadow-2xl);
+        transition: right var(--transition-normal);
+        z-index: 1100;
+        overflow-y: auto;
+    }
+
+    .mobile-nav.active {
+        right: 0;
+    }
+
+    .mobile-nav-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: var(--spacing-xl);
+        border-bottom: 1px solid var(--gray-200);
+        background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+    }
+
+    .mobile-logo {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-md);
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: var(--primary-blue);
+    }
+
+    .mobile-close {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-lg);
+        border: none;
+        background: var(--gray-200);
+        color: var(--gray-700);
+        cursor: pointer;
+        transition: all var(--transition-fast);
+    }
+
+    .mobile-close:hover {
+        background: var(--error);
+        color: var(--white);
+    }
+
+    .mobile-nav-content {
+        padding: var(--spacing-xl);
+    }
+
+    .mobile-user-info {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg);
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-light));
+        border-radius: var(--radius-xl);
+        margin-bottom: var(--spacing-xl);
+        color: var(--white);
+    }
+
+    .mobile-avatar i {
+        font-size: 3rem;
+        color: var(--white);
+    }
+
+    .mobile-user-details {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mobile-user-name {
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .mobile-user-email {
+        font-size: 0.85rem;
+        opacity: 0.9;
+    }
+
+    .mobile-user-badge {
+        font-size: 0.75rem;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 2px 8px;
+        border-radius: 20px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+    .mobile-nav-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    .mobile-nav-link {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-lg);
+        padding: var(--spacing-lg);
+        border-radius: var(--radius-lg);
+        text-decoration: none;
+        color: var(--gray-700);
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all var(--transition-fast);
+        margin-bottom: var(--spacing-xs);
+    }
+
+    .mobile-nav-link:hover {
+        background: var(--gray-100);
+        color: var(--primary-blue);
+        transform: translateX(8px);
+    }
+
+    .mobile-nav-link.logout-link:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: var(--error);
+    }
+
+    .mobile-nav-link.signup-link {
+        background: linear-gradient(135deg, var(--primary-blue), var(--primary-light));
+        color: var(--white);
+        margin-top: var(--spacing-md);
+    }
+
+    .mobile-nav-link.signup-link:hover {
+        transform: translateX(8px) translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .nav-divider {
+        height: 1px;
+        background: var(--gray-200);
+        margin: var(--spacing-lg) 0;
+    }
+
+    /* ================================
+       RESPONSIVE DESIGN
+       ================================ */
+
+    @media (max-width: 1024px) {
+        .header-container {
+            padding: 0 var(--spacing-lg);
+        }
+        
+        .logo-text {
+            display: none;
+        }
+        
+        .user-info {
+            display: none;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .main-nav,
+        .auth-buttons {
+            display: none;
+        }
+        
+        .mobile-menu-toggle {
+            display: flex;
+        }
+        
+        .user-trigger {
+            padding: var(--spacing-sm);
+            gap: var(--spacing-sm);
+        }
+        
+        .header-container {
+            padding: 0 var(--spacing-md);
+            height: 70px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            font-size: 1.25rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .mobile-nav {
+            width: 100%;
+            right: -100%;
+        }
+        
+        .header-container {
+            padding: 0 var(--spacing-sm);
+        }
+    }
+    </style>
+
+    <script>
+    // Enhanced navigation functionality
+    function toggleUserMenu() {
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.classList.toggle('show');
+    }
+
+    function toggleMobileMenu() {
+        const mobileNav = document.getElementById('mobileNav');
+        const overlay = document.getElementById('mobileNavOverlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        
+        mobileNav.classList.toggle('active');
+        overlay.classList.toggle('active');
+        toggle.classList.toggle('active');
+        
+        // Prevent body scroll when mobile menu is open
+        document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+    }
+
+    function closeMobileMenu() {
+        const mobileNav = document.getElementById('mobileNav');
+        const overlay = document.getElementById('mobileNavOverlay');
+        const toggle = document.querySelector('.mobile-menu-toggle');
+        
+        mobileNav.classList.remove('active');
+        overlay.classList.remove('active');
+        toggle.classList.remove('active');
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        const userMenu = document.querySelector('.user-menu');
+        const dropdown = document.getElementById('userDropdown');
+        
+        if (userMenu && dropdown && !userMenu.contains(event.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+    // Handle escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeMobileMenu();
+            document.getElementById('userDropdown')?.classList.remove('show');
+        }
+    });
+
+    // Smooth header background on scroll
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', function() {
+        const header = document.querySelector('.main-header');
+        const currentScrollY = window.scrollY;
+        
+        if (currentScrollY > 50) {
+            header.style.background = 'rgba(255, 255, 255, 0.98)';
+            header.style.boxShadow = '0 8px 32px rgba(0, 0, 0, 0.1)';
+        } else {
+            header.style.background = 'rgba(255, 255, 255, 0.95)';
+            header.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.05)';
+        }
+        
+        lastScrollY = currentScrollY;
+    });
+
+    // Load cart count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        <% if (isLoggedIn) { %>
+            loadCartCount();
+        <% } %>
+    });
+
+    async function loadCartCount() {
+        try {
+            const response = await fetch('/cart/count');
+            const result = await response.json();
+            updateCartCount(result.count);
+        } catch (error) {
+            console.error('Failed to load cart count:', error);
+        }
+    }
+
+    function updateCartCount(count) {
+        const cartCountElement = document.querySelector('.cart-count');
+        if (cartCountElement) {
+            cartCountElement.textContent = count;
+            cartCountElement.style.display = count > 0 ? 'flex' : 'none';
+        }
+    }
+    </script>
+</body>
+</html> 

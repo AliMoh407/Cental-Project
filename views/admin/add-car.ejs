@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add New Car - Admin</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Add Car Page Specific Styles */
+        .add-car-main {
+            margin-top: 80px;
+            background: var(--gray-50);
+            min-height: 100vh;
+            padding: var(--spacing-3xl) 0;
+        }
+
+        .add-car-header {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-blue));
+            color: var(--white);
+            padding: var(--spacing-3xl) 0;
+            margin-bottom: var(--spacing-3xl);
+            text-align: center;
+            position: relative;
+        }
+
+        .add-car-header::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-orange), var(--accent-orange-light));
+        }
+
+        .add-car-title {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: var(--spacing-md);
+            text-shadow: 2px 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .add-car-subtitle {
+            font-size: 1.125rem;
+            color: rgba(255,255,255,0.8);
+            font-weight: 400;
+        }
+
+        .add-car-content {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 var(--spacing-lg);
+        }
+
+        .form-card {
+            background: var(--white);
+            border-radius: var(--radius-2xl);
+            box-shadow: var(--shadow-2xl);
+            border: 1px solid var(--gray-100);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
+            padding: var(--spacing-2xl);
+            border-bottom: 1px solid var(--gray-200);
+            text-align: center;
+        }
+
+        .form-header h2 {
+            margin: 0;
+            color: var(--gray-900);
+            font-size: 1.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+        }
+
+        .form-body {
+            padding: var(--spacing-3xl);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .form-group-full {
+            grid-column: 1 / -1;
+        }
+
+        .enhanced-form-group {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .enhanced-form-group label {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .enhanced-form-group input,
+        .enhanced-form-group select,
+        .enhanced-form-group textarea {
+            width: 100%;
+            padding: var(--spacing-md) var(--spacing-lg);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            background: var(--gray-50);
+            transition: all var(--transition-normal);
+            font-family: var(--font-primary);
+        }
+
+        .enhanced-form-group input:focus,
+        .enhanced-form-group select:focus,
+        .enhanced-form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+        }
+
+        .enhanced-form-group textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-sm);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            text-transform: none;
+            letter-spacing: normal;
+            font-weight: 500;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: var(--spacing-lg);
+            justify-content: center;
+            padding-top: var(--spacing-xl);
+            border-top: 1px solid var(--gray-200);
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, var(--accent-orange), var(--accent-orange-light));
+            color: var(--white);
+            border: none;
+            padding: 1.25rem 3rem;
+            border-radius: var(--radius-lg);
+            font-size: 1.125rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-lg);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-2xl);
+        }
+
+        .btn-cancel {
+            background: var(--gray-500);
+            color: var(--white);
+            border: none;
+            padding: 1.25rem 2rem;
+            border-radius: var(--radius-lg);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .btn-cancel:hover {
+            background: var(--gray-600);
+        }
+
+        .error-alert {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .input-group {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: var(--spacing-md);
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--gray-400);
+            font-size: 1.125rem;
+        }
+
+        .input-group input {
+            padding-left: 3rem;
+        }
+
+        .features-help {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--primary-blue);
+            padding: var(--spacing-md);
+            border-radius: var(--radius-md);
+            margin-top: var(--spacing-sm);
+            font-size: 0.875rem;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        /* Validation Styling */
+        .input-error {
+            border-color: var(--error) !important;
+            background-color: rgba(239, 68, 68, 0.05) !important;
+        }
+        
+        .field-error {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: var(--spacing-sm);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+        
+        .field-error i {
+            font-size: 0.75rem;
+        }
+
+        .error-summary {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: var(--spacing-lg);
+            border-radius: var(--radius-lg);
+            margin-bottom: var(--spacing-xl);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            font-weight: 500;
+        }
+
+        /* File Upload Styles */
+        .file-upload-area {
+            position: relative;
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            text-align: center;
+            background: var(--gray-50);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover,
+        .file-upload-area.dragover {
+            border-color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .file-upload-area input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .file-upload-content {
+            pointer-events: none;
+        }
+
+        .file-upload-content i {
+            font-size: 3rem;
+            color: var(--gray-400);
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-content p {
+            margin: 0.5rem 0;
+            color: var(--gray-600);
+            font-size: 1.1rem;
+        }
+
+        .upload-link {
+            color: var(--primary-blue);
+            font-weight: 600;
+            text-decoration: underline;
+        }
+
+        .file-requirements {
+            font-size: 0.875rem !important;
+            color: var(--gray-500) !important;
+        }
+
+        .image-preview {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .image-preview img {
+            max-width: 300px;
+            max-height: 200px;
+            object-fit: cover;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .remove-image-btn {
+            margin-top: 1rem;
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.3s ease;
+        }
+
+        .remove-image-btn:hover {
+            background: #dc2626;
+        }
+
+        .file-upload-area.has-file {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .file-upload-area.has-file .file-upload-content i {
+            color: var(--success);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .add-car-main {
+                padding: var(--spacing-xl) 0;
+            }
+
+            .add-car-title {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: var(--spacing-md);
+            }
+
+            .form-body {
+                padding: var(--spacing-xl);
+            }
+
+            .form-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-submit,
+            .btn-cancel {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .image-preview img {
+                max-width: 250px;
+                max-height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <%- include('../partials/header') %>
+
+    <main class="add-car-main">
+        <!-- Add Car Header -->
+        <section class="add-car-header">
+            <h1 class="add-car-title">
+                <i class="fas fa-plus-circle"></i> Add New Car
+            </h1>
+            <p class="add-car-subtitle">Expand your fleet with a new vehicle</p>
+        </section>
+
+        <!-- Add Car Content -->
+        <div class="add-car-content">
+            <div class="form-card">
+                <div class="form-header">
+                    <h2>
+                        <i class="fas fa-car"></i> Vehicle Information
+                    </h2>
+                </div>
+
+                <div class="form-body">
+                    <% if (typeof error !== 'undefined') { %>
+                        <div class="error-summary">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <%= error %>
+                        </div>
+                    <% } %>
+
+                    <form action="/admin/cars" method="POST" id="addCarForm" enctype="multipart/form-data">
+                        <div class="form-grid">
+                            <!-- Brand -->
+                            <div class="enhanced-form-group">
+                                <label for="brand">
+                                    <i class="fas fa-tag"></i> Brand
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-car input-icon"></i>
+                                    <input type="text" 
+                                           id="brand" 
+                                           name="brand" 
+                                           class="<%= errors && errors.brand ? 'input-error' : '' %>"
+                                           value="<%= (formData && formData.brand) ? formData.brand : '' %>" 
+                                           placeholder="e.g., Toyota, Honda, Ford"
+                                           required>
+                                </div>
+                                <% if (errors && errors.brand) { %>
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= errors.brand %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Model -->
+                            <div class="enhanced-form-group">
+                                <label for="model">
+                                    <i class="fas fa-bookmark"></i> Model
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-id-card input-icon"></i>
+                                    <input type="text" 
+                                           id="model" 
+                                           name="model" 
+                                           class="<%= errors && errors.model ? 'input-error' : '' %>"
+                                           value="<%= (formData && formData.model) ? formData.model : '' %>" 
+                                           placeholder="e.g., Camry, Civic, Mustang"
+                                           required>
+                                </div>
+                                <% if (errors && errors.model) { %>
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= errors.model %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Year -->
+                            <div class="enhanced-form-group">
+                                <label for="year">
+                                    <i class="fas fa-calendar"></i> Year
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-clock input-icon"></i>
+                                    <input type="number" 
+                                           id="year" 
+                                           name="year" 
+                                           min="1900" 
+                                           max="2025" 
+                                           class="<%= errors && errors.year ? 'input-error' : '' %>"
+                                           value="<%= (formData && formData.year) ? formData.year : new Date().getFullYear() %>" 
+                                           required>
+                                </div>
+                                <% if (errors && errors.year) { %>
+                                    <div class="field-error">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        <%= errors.year %>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="enhanced-form-group">
+                                <label for="price">
+                                    <i class="fas fa-dollar-sign"></i> Price per Day ($)
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-money-bill input-icon"></i>
+                                    <input type="number" 
+                                           id="price" 
+                                           name="price" 
+                                           min="0" 
+                                           step="0.01" 
+                                           value="<%= (typeof formData !== 'undefined' && formData && formData.price) ? formData.price : '' %>" 
+                                           placeholder="e.g., 49.99"
+                                           required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Car Image Upload -->
+                        <div class="enhanced-form-group form-group-full">
+                            <label for="carImage">
+                                <i class="fas fa-camera"></i> Car Image
+                            </label>
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <div class="file-upload-content">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Drag & drop your car image here or <span class="upload-link">browse files</span></p>
+                                    <p class="file-requirements">
+                                        <small>Supported formats: JPG, PNG, GIF • Max size: 5MB</small>
+                                    </p>
+                                </div>
+                                <input type="file" 
+                                       id="carImage" 
+                                       name="carImage" 
+                                       accept="image/*"
+                                       required>
+                            </div>
+                            <div id="imagePreview" class="image-preview" style="display: none;">
+                                <img id="previewImg" src="" alt="Car preview">
+                                <button type="button" id="removeImage" class="remove-image-btn">
+                                    <i class="fas fa-times"></i> Remove Image
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="enhanced-form-group form-group-full">
+                            <label for="description">
+                                <i class="fas fa-file-text"></i> Description
+                            </label>
+                            <textarea id="description" 
+                                      name="description" 
+                                      placeholder="Describe the car's features, condition, and any special notes..."
+                                      required><%= (formData && formData.description) ? formData.description : '' %></textarea>
+                        </div>
+
+                        <div class="form-grid">
+                            <!-- License Number -->
+                            <div class="enhanced-form-group">
+                                <label for="licenseNumber">
+                                    <i class="fas fa-id-badge"></i> License Number
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-hashtag input-icon"></i>
+                                    <input type="text" 
+                                           id="licenseNumber" 
+                                           name="licenseNumber" 
+                                           value="<%= (formData && formData.licenseNumber) ? formData.licenseNumber : '' %>" 
+                                           placeholder="License plate or registration number">
+                                </div>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="enhanced-form-group">
+                                <label for="features">
+                                    <i class="fas fa-list"></i> Features
+                                </label>
+                                <div class="input-group">
+                                    <i class="fas fa-cogs input-icon"></i>
+                                    <input type="text" 
+                                           id="features" 
+                                           name="features" 
+                                           value="<%= (formData && formData.features) ? formData.features : '' %>" 
+                                           placeholder="Bluetooth, GPS, Backup Camera...">
+                                </div>
+                                <div class="features-help">
+                                    <i class="fas fa-info-circle"></i>
+                                    Separate features with commas (e.g., "Bluetooth, Backup Camera, Cruise Control")
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="enhanced-form-group form-group-full">
+                            <div class="checkbox-group">
+                                <input type="checkbox" 
+                                       id="available" 
+                                       name="available" 
+                                       <%= (formData && formData.available === 'on') ? 'checked' : 'checked' %>>
+                                <label for="available">
+                                    <i class="fas fa-check-circle"></i> 
+                                    Mark this car as available for booking
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="/admin/dashboard" class="btn-cancel">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn-submit">
+                                <i class="fas fa-plus-circle"></i> Add Car to Fleet
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        // Form enhancement JavaScript
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            const submitBtn = document.querySelector('.btn-submit');
+            
+            // Add loading state to submit button
+            form.addEventListener('submit', function() {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding Car...';
+                submitBtn.disabled = true;
+            });
+
+            // File upload functionality
+            const fileInput = document.getElementById('carImage');
+            const fileUploadArea = document.getElementById('fileUploadArea');
+            const imagePreview = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+            const removeImageBtn = document.getElementById('removeImage');
+
+            // Handle file input change
+            fileInput.addEventListener('change', handleFileSelect);
+
+            // Handle drag and drop
+            fileUploadArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.add('dragover');
+            });
+
+            fileUploadArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+            });
+
+            fileUploadArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                fileUploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    fileInput.files = files;
+                    handleFileSelect();
+                }
+            });
+
+            // Remove image handler
+            removeImageBtn.addEventListener('click', () => {
+                fileInput.value = '';
+                imagePreview.style.display = 'none';
+                fileUploadArea.classList.remove('has-file');
+            });
+
+            function handleFileSelect() {
+                const file = fileInput.files[0];
+                if (file) {
+                    // Validate file type
+                    if (!file.type.startsWith('image/')) {
+                        alert('Please select an image file.');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Validate file size (5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB.');
+                        fileInput.value = '';
+                        return;
+                    }
+
+                    // Show preview
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        previewImg.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        fileUploadArea.classList.add('has-file');
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    imagePreview.style.display = 'none';
+                    fileUploadArea.classList.remove('has-file');
+                }
+            }
+
+            // Auto-format features input
+            const featuresInput = document.getElementById('features');
+            featuresInput.addEventListener('blur', function() {
+                if (this.value) {
+                    // Clean up and format features
+                    const features = this.value
+                        .split(',')
+                        .map(feature => feature.trim())
+                        .filter(feature => feature.length > 0)
+                        .join(', ');
+                    this.value = features;
+                }
+            });
+
+            // Form validation enhancement
+            const requiredInputs = form.querySelectorAll('input[required], textarea[required]');
+            requiredInputs.forEach(input => {
+                input.addEventListener('invalid', function() {
+                    this.style.borderColor = 'var(--error)';
+                    this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
+                });
+                
+                input.addEventListener('input', function() {
+                    if (this.validity.valid) {
+                        this.style.borderColor = 'var(--success)';
+                        this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html> 

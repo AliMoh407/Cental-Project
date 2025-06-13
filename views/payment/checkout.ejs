@@ -1,0 +1,1035 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .payment-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 70vh;
+        }
+
+        .payment-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .payment-header h1 {
+            font-size: 2.5em;
+            color: var(--gray-900);
+            margin-bottom: 10px;
+        }
+
+        .payment-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        .payment-form-section {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-100);
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: var(--gray-900);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .payment-method {
+            padding: 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            text-align: center;
+            background: var(--gray-50);
+        }
+
+        .payment-method.selected {
+            border-color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .payment-method i {
+            font-size: 2em;
+            margin-bottom: 8px;
+            color: var(--gray-600);
+        }
+
+        .payment-method.selected i {
+            color: var(--primary-blue);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: var(--gray-50);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .card-input {
+            position: relative;
+        }
+
+        .card-icons {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 5px;
+        }
+
+        .card-icon {
+            width: 30px;
+            height: 20px;
+            background: var(--gray-300);
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            color: var(--white);
+            font-weight: bold;
+        }
+
+        .card-icon.visa { background: #1a237e; }
+        .card-icon.master { background: #eb001b; }
+        .card-icon.amex { background: #006fcf; }
+
+        /* Phone Number Input Styles */
+        .phone-input-container {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .country-select {
+            flex: 0 0 160px;
+            min-width: 160px;
+            font-size: 14px;
+            background: var(--gray-50);
+            border: 2px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 12px 10px;
+            transition: border-color 0.3s ease;
+        }
+
+        .country-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            background: var(--white);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        #phone-number {
+            flex: 1;
+            margin: 0;
+        }
+
+        .phone-help {
+            margin-top: 8px;
+            display: flex;
+            align-items: flex-start;
+            gap: 6px;
+            color: var(--gray-600);
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .phone-help i {
+            color: var(--primary-blue);
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .phone-help small {
+            margin: 0;
+        }
+
+        /* Phone number validation styles */
+        #phone-number.valid {
+            border-color: var(--success);
+            background: rgba(34, 197, 94, 0.05);
+        }
+
+        #phone-number.invalid {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        #phone-number.valid:focus {
+            border-color: var(--success);
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        #phone-number.invalid:focus {
+            border-color: var(--danger);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+
+        /* Responsive phone input */
+        @media (max-width: 768px) {
+            .phone-input-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .country-select {
+                flex: none;
+                width: 100%;
+            }
+        }
+
+        .order-summary {
+            background: var(--white);
+            border-radius: var(--radius-xl);
+            padding: 30px;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-100);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .cart-item-summary {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            margin-bottom: 15px;
+            background: var(--gray-50);
+        }
+
+        .item-image {
+            width: 80px;
+            height: 60px;
+            border-radius: var(--radius-md);
+            object-fit: cover;
+        }
+
+        .item-details h4 {
+            margin: 0 0 5px 0;
+            font-size: 1.1em;
+            color: var(--gray-900);
+        }
+
+        .item-details p {
+            margin: 2px 0;
+            font-size: 0.9em;
+            color: var(--gray-600);
+        }
+
+        .item-price {
+            margin-left: auto;
+            font-weight: bold;
+            color: var(--success);
+        }
+
+        .pricing-breakdown {
+            border-top: 2px solid var(--gray-200);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+
+        .pricing-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            color: var(--gray-700);
+        }
+
+        .pricing-total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: var(--gray-900);
+            border-top: 2px solid var(--gray-200);
+            padding-top: 15px;
+            margin-top: 15px;
+        }
+
+        .pay-button {
+            width: 100%;
+            background: linear-gradient(135deg, var(--success), #059669);
+            color: var(--white);
+            border: none;
+            padding: 18px 25px;
+            border-radius: var(--radius-lg);
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all var(--transition-normal);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            position: relative;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .pay-button:disabled {
+            background: var(--gray-400);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid var(--white);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .file-upload-container {
+            position: relative;
+        }
+
+        .file-upload-container input[type="file"] {
+            display: none;
+        }
+
+        .file-upload-area {
+            border: 2px dashed var(--gray-300);
+            border-radius: var(--radius-lg);
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition-normal);
+            background: var(--gray-50);
+        }
+
+        .file-upload-area:hover {
+            border-color: var(--primary-blue);
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .file-upload-area.dragover {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .upload-content i {
+            font-size: 3em;
+            color: var(--gray-400);
+            margin-bottom: 15px;
+        }
+
+        .upload-content p {
+            font-size: 1.1em;
+            color: var(--gray-700);
+            margin-bottom: 5px;
+        }
+
+        .upload-content small {
+            color: var(--gray-500);
+        }
+
+        .file-preview {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 15px;
+            border: 2px solid var(--success);
+            border-radius: var(--radius-lg);
+            background: rgba(16, 185, 129, 0.05);
+            margin-top: 10px;
+        }
+
+        .file-preview img {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+        }
+
+        .file-info {
+            flex: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .file-info span {
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+
+        .remove-file {
+            background: var(--error);
+            color: var(--white);
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-normal);
+        }
+
+        .remove-file:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .upload-requirements {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .upload-requirements h4 {
+            color: var(--primary-blue);
+            margin-bottom: 10px;
+            font-size: 1em;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .upload-requirements ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .upload-requirements li {
+            color: var(--gray-700);
+            margin-bottom: 5px;
+            font-size: 0.9em;
+        }
+
+        .security-info {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: var(--radius-lg);
+            padding: 15px;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--success);
+            font-size: 0.9em;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            padding: 15px;
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .payment-content {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .payment-methods {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body data-page="payment">
+    <%- include('../partials/header') %>
+
+    <main class="payment-container">
+        <div class="payment-header">
+            <h1><i class="fas fa-credit-card"></i> Secure Payment</h1>
+            <p>Complete your car rental booking</p>
+        </div>
+
+        <div class="payment-content">
+            <!-- Payment Form -->
+            <div class="payment-form-section">
+                <h2 class="section-title">
+                    <i class="fas fa-lock"></i>
+                    Payment Information
+                </h2>
+
+                <div id="error-message" class="error-message">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span id="error-text"></span>
+                </div>
+
+                <form id="payment-form" enctype="multipart/form-data">
+                    <!-- Payment Methods -->
+                    <div class="payment-methods">
+                        <div class="payment-method selected" data-method="credit_card">
+                            <i class="fas fa-credit-card"></i>
+                            <p>Credit Card</p>
+                        </div>
+                        <div class="payment-method" data-method="debit_card">
+                            <i class="fas fa-money-check-alt"></i>
+                            <p>Debit Card</p>
+                        </div>
+                    </div>
+
+                    <input type="hidden" id="payment-method" name="paymentMethod" value="credit_card">
+
+                    <!-- Card Details -->
+                    <div class="form-group">
+                        <label for="card-holder-name">Cardholder Name</label>
+                        <input type="text" id="card-holder-name" name="cardHolderName" required 
+                               placeholder="Enter name as on card">
+                    </div>
+
+                    <!-- Phone Number with Country Code -->
+                    <div class="form-group">
+                        <label for="phone-number">
+                            <i class="fas fa-phone"></i>
+                            Phone Number (Required for verification)
+                        </label>
+                        <div class="phone-input-container">
+                            <select id="country-code" name="countryCode" required class="country-select">
+                                <option value="+1" data-country="US" data-flag="🇺🇸">🇺🇸 +1 (USA)</option>
+                                <option value="+44" data-country="GB" data-flag="🇬🇧">🇬🇧 +44 (UK)</option>
+                                <option value="+33" data-country="FR" data-flag="🇫🇷">🇫🇷 +33 (France)</option>
+                                <option value="+49" data-country="DE" data-flag="🇩🇪">🇩🇪 +49 (Germany)</option>
+                                <option value="+39" data-country="IT" data-flag="🇮🇹">🇮🇹 +39 (Italy)</option>
+                                <option value="+34" data-country="ES" data-flag="🇪🇸">🇪🇸 +34 (Spain)</option>
+                                <option value="+7" data-country="RU" data-flag="🇷🇺">🇷🇺 +7 (Russia)</option>
+                                <option value="+86" data-country="CN" data-flag="🇨🇳">🇨🇳 +86 (China)</option>
+                                <option value="+81" data-country="JP" data-flag="🇯🇵">🇯🇵 +81 (Japan)</option>
+                                <option value="+82" data-country="KR" data-flag="🇰🇷">🇰🇷 +82 (South Korea)</option>
+                                <option value="+91" data-country="IN" data-flag="🇮🇳">🇮🇳 +91 (India)</option>
+                                <option value="+61" data-country="AU" data-flag="🇦🇺">🇦🇺 +61 (Australia)</option>
+                                <option value="+55" data-country="BR" data-flag="🇧🇷">🇧🇷 +55 (Brazil)</option>
+                                <option value="+52" data-country="MX" data-flag="🇲🇽">🇲🇽 +52 (Mexico)</option>
+                                <option value="+27" data-country="ZA" data-flag="🇿🇦">🇿🇦 +27 (South Africa)</option>
+                                <option value="+20" data-country="EG" data-flag="🇪🇬">🇪🇬 +20 (Egypt)</option>
+                                <option value="+971" data-country="AE" data-flag="🇦🇪">🇦🇪 +971 (UAE)</option>
+                                <option value="+966" data-country="SA" data-flag="🇸🇦">🇸🇦 +966 (Saudi Arabia)</option>
+                                <option value="+90" data-country="TR" data-flag="🇹🇷">🇹🇷 +90 (Turkey)</option>
+                                <option value="+98" data-country="IR" data-flag="🇮🇷">🇮🇷 +98 (Iran)</option>
+                                <option value="+92" data-country="PK" data-flag="🇵🇰">🇵🇰 +92 (Pakistan)</option>
+                                <option value="+880" data-country="BD" data-flag="🇧🇩">🇧🇩 +880 (Bangladesh)</option>
+                                <option value="+62" data-country="ID" data-flag="🇮🇩">🇮🇩 +62 (Indonesia)</option>
+                                <option value="+60" data-country="MY" data-flag="🇲🇾">🇲🇾 +60 (Malaysia)</option>
+                                <option value="+65" data-country="SG" data-flag="🇸🇬">🇸🇬 +65 (Singapore)</option>
+                                <option value="+66" data-country="TH" data-flag="🇹🇭">🇹🇭 +66 (Thailand)</option>
+                                <option value="+84" data-country="VN" data-flag="🇻🇳">🇻🇳 +84 (Vietnam)</option>
+                                <option value="+63" data-country="PH" data-flag="🇵🇭">🇵🇭 +63 (Philippines)</option>
+                                <option value="+254" data-country="KE" data-flag="🇰🇪">🇰🇪 +254 (Kenya)</option>
+                                <option value="+234" data-country="NG" data-flag="🇳🇬">🇳🇬 +234 (Nigeria)</option>
+                                <option value="+212" data-country="MA" data-flag="🇲🇦">🇲🇦 +212 (Morocco)</option>
+                            </select>
+                            <input type="tel" id="phone-number" name="phoneNumber" required 
+                                   placeholder="Enter phone number" 
+                                   pattern="[0-9\-\s\(\)]{7,15}"
+                                   title="Please enter a valid phone number">
+                        </div>
+                        <div class="phone-help">
+                            <i class="fas fa-info-circle"></i>
+                            <small>Enter your phone number without the country code. We'll use this for booking confirmation and support.</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="card-number">Card Number</label>
+                        <div class="card-input">
+                            <input type="text" id="card-number" name="cardNumber" required 
+                                   placeholder="1234 5678 9012 3456" maxlength="19">
+                            <div class="card-icons">
+                                <div class="card-icon visa">VISA</div>
+                                <div class="card-icon master">MC</div>
+                                <div class="card-icon amex">AMEX</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry-month">Expiry Month</label>
+                            <select id="expiry-month" name="expiryMonth" required>
+                                <option value="">Month</option>
+                                <option value="01">01 - January</option>
+                                <option value="02">02 - February</option>
+                                <option value="03">03 - March</option>
+                                <option value="04">04 - April</option>
+                                <option value="05">05 - May</option>
+                                <option value="06">06 - June</option>
+                                <option value="07">07 - July</option>
+                                <option value="08">08 - August</option>
+                                <option value="09">09 - September</option>
+                                <option value="10">10 - October</option>
+                                <option value="11">11 - November</option>
+                                <option value="12">12 - December</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="expiry-year">Expiry Year</label>
+                            <select id="expiry-year" name="expiryYear" required>
+                                <option value="">Year</option>
+                                <% for(let year = new Date().getFullYear(); year <= new Date().getFullYear() + 15; year++) { %>
+                                    <option value="<%= year %>"><%= year %></option>
+                                <% } %>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="cvv">CVV</label>
+                        <input type="text" id="cvv" name="cvv" required 
+                               placeholder="123" maxlength="4">
+                    </div>
+
+                    <!-- ID Upload Section -->
+                    <div class="form-group">
+                        <label for="id-upload">
+                            <i class="fas fa-id-card"></i>
+                            Upload ID Picture (Required)
+                        </label>
+                        <div class="file-upload-container">
+                            <input type="file" id="id-upload" name="idPicture" accept="image/*" required>
+                            <div class="file-upload-area" onclick="triggerFileUpload()">
+                                <div class="upload-content">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                    <p>Click to upload or drag & drop your ID</p>
+                                    <small>Supported formats: JPG, PNG, GIF (Max: 5MB)</small>
+                                </div>
+                            </div>
+                            <div class="file-preview" id="file-preview" style="display: none;">
+                                <img id="preview-image" alt="ID Preview">
+                                <div class="file-info">
+                                    <span id="file-name"></span>
+                                    <button type="button" class="remove-file" onclick="removeFile()">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="upload-requirements">
+                            <h4><i class="fas fa-info-circle"></i> ID Requirements:</h4>
+                            <ul>
+                                <li>Must be a clear, readable photo of your government-issued ID</li>
+                                <li>Acceptable: Driver's License, Passport, National ID Card</li>
+                                <li>Ensure all text and photo are clearly visible</li>
+                                <li>No blurry or damaged IDs will be accepted</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="security-info">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Your payment and personal information is encrypted and secure</span>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="order-summary">
+                <h2 class="section-title">
+                    <i class="fas fa-receipt"></i>
+                    Order Summary
+                </h2>
+
+                <!-- Cart Items -->
+                <% cart.items.forEach(item => { %>
+                    <div class="cart-item-summary">
+                        <img src="/images/<%= item.car.image %>" alt="<%= item.car.brand %> <%= item.car.model %>" class="item-image">
+                        <div class="item-details">
+                            <h4><%= item.car.brand %> <%= item.car.model %></h4>
+                            <p><%= new Date(item.pickupDate).toLocaleDateString() %> - <%= new Date(item.returnDate).toLocaleDateString() %></p>
+                            <p><%= item.pickupLocation %> • <%= item.totalDays %> day<%= item.totalDays > 1 ? 's' : '' %></p>
+                        </div>
+                        <div class="item-price">$<%= item.totalPrice %></div>
+                    </div>
+                <% }); %>
+
+                <!-- Pricing Breakdown -->
+                <div class="pricing-breakdown">
+                    <div class="pricing-row">
+                        <span>Subtotal:</span>
+                        <span>$<%= pricing.subtotal.toFixed(2) %></span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Tax (<%= pricing.taxRate %>%):</span>
+                        <span>$<%= pricing.tax.toFixed(2) %></span>
+                    </div>
+                    <div class="pricing-row">
+                        <span>Service Fee:</span>
+                        <span>$<%= pricing.serviceFee.toFixed(2) %></span>
+                    </div>
+                    
+                    <div class="pricing-total">
+                        <span>Total:</span>
+                        <span>$<%= pricing.total.toFixed(2) %></span>
+                    </div>
+                </div>
+
+                <button type="submit" form="payment-form" class="pay-button" id="pay-button">
+                    <span class="button-text">
+                        <i class="fas fa-lock"></i>
+                        Pay $<%= pricing.total.toFixed(2) %>
+                    </span>
+                    <div class="loading-spinner"></div>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        // Payment method selection
+        document.querySelectorAll('.payment-method').forEach(method => {
+            method.addEventListener('click', function() {
+                document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                this.classList.add('selected');
+                document.getElementById('payment-method').value = this.dataset.method;
+            });
+        });
+
+        // Card number formatting
+        document.getElementById('card-number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+            let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+            e.target.value = formattedValue;
+        });
+
+        // CVV input validation
+        document.getElementById('cvv').addEventListener('input', function(e) {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        });
+
+        // Phone number formatting and validation
+        document.getElementById('phone-number').addEventListener('input', function(e) {
+            let value = e.target.value.replace(/[^0-9\-\s\(\)]/g, '');
+            e.target.value = value;
+            
+            // Real-time validation
+            validatePhoneNumber();
+        });
+
+        document.getElementById('country-code').addEventListener('change', function() {
+            validatePhoneNumber();
+        });
+
+        function validatePhoneNumber() {
+            const phoneInput = document.getElementById('phone-number');
+            const countryCode = document.getElementById('country-code').value;
+            const phoneNumber = phoneInput.value.replace(/[^0-9]/g, '');
+            
+            // Remove any previous validation styling
+            phoneInput.classList.remove('valid', 'invalid');
+            
+            if (phoneNumber.length === 0) return; // Don't validate empty field
+            
+            // Country-specific validation rules
+            const validationRules = {
+                '+1': { min: 10, max: 10, format: 'XXX-XXX-XXXX' }, // US/Canada
+                '+44': { min: 10, max: 11, format: 'XXXX XXX XXXX' }, // UK
+                '+33': { min: 9, max: 9, format: 'X XX XX XX XX' }, // France
+                '+49': { min: 10, max: 12, format: 'XXX XXXXXXX' }, // Germany
+                '+39': { min: 9, max: 11, format: 'XXX XXX XXXX' }, // Italy
+                '+34': { min: 9, max: 9, format: 'XXX XXX XXX' }, // Spain
+                '+7': { min: 10, max: 10, format: 'XXX XXX-XX-XX' }, // Russia
+                '+86': { min: 11, max: 11, format: 'XXX XXXX XXXX' }, // China
+                '+81': { min: 10, max: 11, format: 'XX-XXXX-XXXX' }, // Japan
+                '+82': { min: 9, max: 11, format: 'XX-XXXX-XXXX' }, // South Korea
+                '+91': { min: 10, max: 10, format: 'XXXXX XXXXX' }, // India
+                '+61': { min: 9, max: 9, format: 'X XXXX XXXX' }, // Australia
+                '+55': { min: 10, max: 11, format: 'XX XXXXX-XXXX' }, // Brazil
+                '+52': { min: 10, max: 10, format: 'XX XXXX XXXX' }, // Mexico
+                '+27': { min: 9, max: 9, format: 'XX XXX XXXX' }, // South Africa
+                '+20': { min: 9, max: 10, format: 'XX XXX XXXX' }, // Egypt
+                '+971': { min: 8, max: 9, format: 'XX XXX XXXX' }, // UAE
+                '+966': { min: 9, max: 9, format: 'XX XXX XXXX' }, // Saudi Arabia
+                '+90': { min: 10, max: 10, format: 'XXX XXX XX XX' }, // Turkey
+                '+98': { min: 10, max: 10, format: 'XXX XXX XXXX' }, // Iran
+                '+92': { min: 10, max: 10, format: 'XXX XXX XXXX' }, // Pakistan
+                '+880': { min: 10, max: 11, format: 'XXXX-XXXXXX' }, // Bangladesh
+                '+62': { min: 9, max: 12, format: 'XXX-XXX-XXXX' }, // Indonesia
+                '+60': { min: 9, max: 10, format: 'XX-XXX XXXX' }, // Malaysia
+                '+65': { min: 8, max: 8, format: 'XXXX XXXX' }, // Singapore
+                '+66': { min: 9, max: 9, format: 'XX XXX XXXX' }, // Thailand
+                '+84': { min: 9, max: 10, format: 'XXX XXX XXXX' }, // Vietnam
+                '+63': { min: 10, max: 10, format: 'XXX XXX XXXX' }, // Philippines
+                '+254': { min: 9, max: 9, format: 'XXX XXX XXX' }, // Kenya
+                '+234': { min: 10, max: 11, format: 'XXX XXX XXXX' }, // Nigeria
+                '+212': { min: 9, max: 9, format: 'XXX-XXX-XXX' } // Morocco
+            };
+            
+            const rule = validationRules[countryCode];
+            if (rule && phoneNumber.length >= rule.min && phoneNumber.length <= rule.max) {
+                phoneInput.classList.add('valid');
+                phoneInput.title = `Valid ${getCountryName(countryCode)} phone number`;
+            } else if (rule) {
+                phoneInput.classList.add('invalid');
+                phoneInput.title = `Invalid phone number. Expected ${rule.min}-${rule.max} digits for ${getCountryName(countryCode)}`;
+            }
+        }
+
+        function getCountryName(countryCode) {
+            const countryNames = {
+                '+1': 'US/Canada',
+                '+44': 'UK',
+                '+33': 'France',
+                '+49': 'Germany',
+                '+39': 'Italy',
+                '+34': 'Spain',
+                '+7': 'Russia',
+                '+86': 'China',
+                '+81': 'Japan',
+                '+82': 'South Korea',
+                '+91': 'India',
+                '+61': 'Australia',
+                '+55': 'Brazil',
+                '+52': 'Mexico',
+                '+27': 'South Africa',
+                '+20': 'Egypt',
+                '+971': 'UAE',
+                '+966': 'Saudi Arabia',
+                '+90': 'Turkey',
+                '+98': 'Iran',
+                '+92': 'Pakistan',
+                '+880': 'Bangladesh',
+                '+62': 'Indonesia',
+                '+60': 'Malaysia',
+                '+65': 'Singapore',
+                '+66': 'Thailand',
+                '+84': 'Vietnam',
+                '+63': 'Philippines',
+                '+254': 'Kenya',
+                '+234': 'Nigeria',
+                '+212': 'Morocco'
+            };
+            return countryNames[countryCode] || 'Unknown';
+        }
+
+        // File upload functionality
+        function triggerFileUpload() {
+            document.getElementById('id-upload').click();
+        }
+
+        document.getElementById('id-upload').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFileUpload(file);
+            }
+        });
+
+        function handleFileUpload(file) {
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please upload a valid image file (JPG, PNG, GIF)');
+                return;
+            }
+
+            // Validate file size (5MB max)
+            const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+            if (file.size > maxSize) {
+                showError('File size must be less than 5MB');
+                return;
+            }
+
+            // Show file preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-image').src = e.target.result;
+                document.getElementById('file-name').textContent = file.name;
+                document.querySelector('.file-upload-area').style.display = 'none';
+                document.getElementById('file-preview').style.display = 'flex';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeFile() {
+            document.getElementById('id-upload').value = '';
+            document.querySelector('.file-upload-area').style.display = 'block';
+            document.getElementById('file-preview').style.display = 'none';
+        }
+
+        // Drag and drop functionality
+        const uploadArea = document.querySelector('.file-upload-area');
+        
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                document.getElementById('id-upload').files = files;
+                handleFileUpload(file);
+            }
+        });
+
+        // Form submission
+        document.getElementById('payment-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const payButton = document.getElementById('pay-button');
+            const buttonText = payButton.querySelector('.button-text');
+            const spinner = payButton.querySelector('.loading-spinner');
+            const errorDiv = document.getElementById('error-message');
+            
+            // Check if ID is uploaded
+            const idUpload = document.getElementById('id-upload');
+            if (!idUpload.files || idUpload.files.length === 0) {
+                showError('Please upload your ID picture before proceeding');
+                return;
+            }
+
+            // Validate phone number
+            const phoneInput = document.getElementById('phone-number');
+            const phoneNumber = phoneInput.value.replace(/[^0-9]/g, '');
+            if (phoneNumber.length === 0) {
+                showError('Please enter your phone number');
+                phoneInput.focus();
+                return;
+            }
+            
+            // Check if phone number is valid based on current validation
+            if (phoneInput.classList.contains('invalid')) {
+                showError('Please enter a valid phone number for the selected country');
+                phoneInput.focus();
+                return;
+            }
+            
+            // Disable button and show loading
+            payButton.disabled = true;
+            buttonText.style.display = 'none';
+            spinner.style.display = 'block';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const formData = new FormData(this);
+                
+                const response = await fetch('/payment/process', {
+                    method: 'POST',
+                    body: formData // Send as FormData to include file
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Redirect to success page
+                    window.location.href = result.redirectUrl;
+                } else {
+                    // Show error
+                    showError(result.error);
+                }
+                
+            } catch (error) {
+                console.error('Payment error:', error);
+                showError('Payment processing failed. Please try again.');
+            } finally {
+                // Re-enable button
+                payButton.disabled = false;
+                buttonText.style.display = 'flex';
+                spinner.style.display = 'none';
+            }
+        });
+
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            const errorText = document.getElementById('error-text');
+            
+            errorText.textContent = message;
+            errorDiv.style.display = 'flex';
+            
+            // Scroll to error message
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        // Auto-focus first input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('card-holder-name').focus();
+        });
+    </script>
+</body>
+</html> 

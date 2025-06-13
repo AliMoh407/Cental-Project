@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cental - Our Cars</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <main class="cars-container">
+        <h1>Our Fleet</h1>
+        
+        <div class="cars-grid">
+            <% cars.forEach(car => { %>
+                <div class="car-card">
+                    <img src="<%= car.image %>" alt="<%= car.brand %> <%= car.model %>">
+                    <div class="car-info">
+                        <h2><%= car.brand %> <%= car.model %></h2>
+                        <p class="year">Year: <%= car.year %></p>
+                        <p class="price">$<%= car.price %>/day</p>
+                        <p class="description"><%= car.description %></p>
+                        
+                        <div class="features">
+                            <% car.features.forEach(feature => { %>
+                                <span class="feature-tag"><%= feature %></span>
+                            <% }); %>
+                        </div>
+
+                        <% if (car.available) { %>
+                            <button class="book-btn" onclick="bookCar('<%= car._id %>')">Book Now</button>
+                        <% } else { %>
+                            <button class="book-btn disabled" disabled>Currently Unavailable</button>
+                        <% } %>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+
+    <script>
+        function bookCar(carId) {
+            // You can implement the booking logic here
+            window.location.href = `/book?carId=${carId}`;
+        }
+    </script>
+</body>
+</html> 
