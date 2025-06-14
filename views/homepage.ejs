@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= currentLanguage %>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,10 +14,10 @@
         <!-- Hero Section -->
         <section class="hero">
             <div class="hero-content">
-                <h1>Find Your Perfect Ride</h1>
-                <p>Choose from our wide selection of premium vehicles</p>
+                <h1><%= t('home.hero.title') %></h1>
+                <p><%= t('home.hero.subtitle') %></p>
                 <a href="#search" class="btn btn-secondary btn-large">
-                    <i class="fas fa-search"></i> Start Your Search
+                    <i class="fas fa-search"></i> <%= t('home.hero.searchButton') %>
                 </a>
             </div>
         </section>
@@ -26,16 +26,16 @@
         <section id="search" class="search-section">
             <div class="search-container">
                 <div class="search-box">
-                    <h2 class="search-title">🚗 Search & Filter Cars</h2>
-                    <input type="text" id="car-search" class="search-input" placeholder="Search by brand, model, or features...">
+                    <h2 class="search-title">🚗 <%= t('home.search.title') %></h2>
+                    <input type="text" id="car-search" class="search-input" placeholder="<%= t('home.search.placeholder') %>">
                     
                     <!-- Advanced Filters -->
                     <form id="filter-form">
                         <div class="filter-row">
                             <div class="filter-group">
-                                <label for="brand">Brand</label>
+                                <label for="brand"><%= t('home.search.filters.brand') %></label>
                                 <select name="brand" id="brand">
-                                    <option value="">All Brands</option>
+                                    <option value=""><%= t('home.search.filters.allBrands') %></option>
                                     <option value="Toyota">Toyota</option>
                                     <option value="Honda">Honda</option>
                                     <option value="Ford">Ford</option>
@@ -46,19 +46,19 @@
                             </div>
                             
                             <div class="filter-group">
-                                <label for="minPrice">Min Price</label>
+                                <label for="minPrice"><%= t('home.search.filters.minPrice') %></label>
                                 <input type="number" name="minPrice" id="minPrice" placeholder="$0">
                             </div>
                             
                             <div class="filter-group">
-                                <label for="maxPrice">Max Price</label>
+                                <label for="maxPrice"><%= t('home.search.filters.maxPrice') %></label>
                                 <input type="number" name="maxPrice" id="maxPrice" placeholder="$1000">
                             </div>
                             
                             <div class="filter-group">
-                                <label for="year">Year</label>
+                                <label for="year"><%= t('home.search.filters.year') %></label>
                                 <select name="year" id="year">
-                                    <option value="">Any Year</option>
+                                    <option value=""><%= t('home.search.filters.anyYear') %></option>
                                     <option value="2024">2024</option>
                                     <option value="2023">2023</option>
                                     <option value="2022">2022</option>
@@ -68,18 +68,18 @@
                             </div>
                             
                             <div class="filter-group">
-                                <label for="available">Availability</label>
+                                <label for="available"><%= t('home.search.filters.availability') %></label>
                                 <select name="available" id="available">
-                                    <option value="">All</option>
-                                    <option value="true">Available</option>
-                                    <option value="false">Not Available</option>
+                                    <option value=""><%= t('home.search.filters.all') %></option>
+                                    <option value="true"><%= t('home.search.filters.available') %></option>
+                                    <option value="false"><%= t('home.search.filters.notAvailable') %></option>
                                 </select>
                             </div>
                         </div>
                         
                         <div style="text-align: center;">
                             <button type="submit" class="btn-filter">
-                                <i class="fas fa-filter"></i> Apply Filters
+                                <i class="fas fa-filter"></i> <%= t('home.search.filters.apply') %>
                             </button>
                         </div>
                     </form>
@@ -89,7 +89,7 @@
                 <div id="loading" class="loading">
                     <div>
                         <i class="fas fa-spinner"></i>
-                        <p>Searching cars...</p>
+                        <p><%= t('home.search.loading') %></p>
                     </div>
                 </div>
             </div>
@@ -98,27 +98,85 @@
         <!-- Featured Cars Section -->
         <section class="featured-cars">
             <div class="container">
-                <h2>Our Premium Fleet</h2>
+                <h2><%= t('home.featured.title') %></h2>
                 
                 <!-- Cars Display Container -->
                 <div id="cars-container" class="cars-grid">
                 <% cars.forEach(car => { %>
                         <div class="car-card" data-car-id="<%= car._id %>">
-                            <img src="<%= car.image %>" alt="<%= car.brand %> <%= car.model %>" loading="lazy">
+                            <div class="car-image-container">
+                                <% if (car.images && car.images.length > 0) { %>
+                                    <img src="<%= car.images[0] %>" alt="<%= car.brand %> <%= car.model %>" loading="lazy">
+                                <% } else { %>
+                                    <div class="no-image">
+                                        <i class="fas fa-car"></i>
+                                        <p><%= t('home.featured.noImage') %></p>
+                                    </div>
+                                <% } %>
+                            </div>
                             <div class="car-info">
                                 <h3><%= car.brand %> <%= car.model %></h3>
                                 <p class="year"><%= car.year %></p>
-                                <p class="price">$<%= car.price %>/day</p>
+                                <p class="price"><%= car.price %> L.E/<%= t('home.featured.perDay') %></p>
                                 <div class="availability <%= car.available ? 'available' : 'unavailable' %>">
-                                    <%= car.available ? 'Available' : 'Not Available' %>
+                                    <%= car.available ? t('home.featured.available') : t('home.featured.notAvailable') %>
                                 </div>
                                 <button class="btn btn-primary" onclick="viewCarDetails('<%= car._id %>')">
-                                    <i class="fas fa-eye"></i> View Details
+                                    <i class="fas fa-eye"></i> <%= t('home.featured.viewDetails') %>
                                 </button>
                             </div>
                     </div>
                 <% }); %>
                 </div>
+
+                <!-- Pagination Controls -->
+                <% if (pagination && pagination.totalPages > 1) { %>
+                    <div class="pagination">
+                        <div class="pagination-info">
+                            <%= t('home.pagination.showing', { 
+                                start: (pagination.page - 1) * pagination.limit + 1,
+                                end: Math.min(pagination.page * pagination.limit, pagination.totalCars),
+                                total: pagination.totalCars
+                            }) %>
+                        </div>
+                        <div class="pagination-controls">
+                            <% if (pagination.hasPrevPage) { %>
+                                <a href="/?page=<%= pagination.prevPage %>" class="pagination-btn">
+                                    <i class="fas fa-chevron-left"></i> <%= t('home.pagination.previous') %>
+                                </a>
+                            <% } %>
+                            
+                            <div class="pagination-pages">
+                                <% let startPage = Math.max(1, pagination.page - 2); %>
+                                <% let endPage = Math.min(pagination.totalPages, pagination.page + 2); %>
+                                
+                                <% if (startPage > 1) { %>
+                                    <a href="/?page=1" class="pagination-page <%= pagination.page === 1 ? 'active' : '' %>">1</a>
+                                    <% if (startPage > 2) { %><span class="pagination-ellipsis">...</span><% } %>
+                                <% } %>
+                                
+                                <% for (let i = startPage; i <= endPage; i++) { %>
+                                    <a href="/?page=<%= i %>" class="pagination-page <%= pagination.page === i ? 'active' : '' %>">
+                                        <%= i %>
+                                    </a>
+                                <% } %>
+                                
+                                <% if (endPage < pagination.totalPages) { %>
+                                    <% if (endPage < pagination.totalPages - 1) { %><span class="pagination-ellipsis">...</span><% } %>
+                                    <a href="/?page=<%= pagination.totalPages %>" class="pagination-page <%= pagination.page === pagination.totalPages ? 'active' : '' %>">
+                                        <%= pagination.totalPages %>
+                                    </a>
+                                <% } %>
+                            </div>
+                            
+                            <% if (pagination.hasNextPage) { %>
+                                <a href="/?page=<%= pagination.nextPage %>" class="pagination-btn">
+                                    <%= t('home.pagination.next') %> <i class="fas fa-chevron-right"></i>
+                                </a>
+                            <% } %>
+                        </div>
+                    </div>
+                <% } %>
             </div>
         </section>
     </main>

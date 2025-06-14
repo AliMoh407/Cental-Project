@@ -9,9 +9,9 @@ router.get('/dashboard', requireAdmin, adminController.getDashboard);
 
 // Car management
 router.get('/cars/add', requireAdmin, adminController.getAddCar);
-router.post('/cars', requireAdmin, adminController.uploadCarImage, validateCarImage, adminController.postAddCar);
+router.post('/cars/add', requireAdmin, adminController.uploadCarImages, adminController.postAddCar);
 router.get('/cars/edit/:id', requireAdmin, adminController.getEditCar);
-router.post('/cars/edit/:id', requireAdmin, adminController.uploadCarImage, validateCarImage, adminController.postEditCar);
+router.post('/cars/edit/:id', requireAdmin, adminController.uploadCarImages, adminController.postEditCar);
 router.delete('/cars/:id', requireAdmin, adminController.deleteCar);
 router.post('/cars/:id/availability', requireAdmin, adminController.toggleCarAvailability);
 

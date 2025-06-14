@@ -404,6 +404,61 @@
                 max-height: 150px;
             }
         }
+
+        .image-upload-container {
+            margin-top: 10px;
+        }
+
+        .image-preview-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e9ecef;
+        }
+
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .image-preview .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #dc3545;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .image-preview .remove-image:hover {
+            background: #dc3545;
+            color: white;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -527,29 +582,18 @@
                         </div>
 
                         <!-- Car Image Upload -->
-                        <div class="enhanced-form-group form-group-full">
-                            <label for="carImage">
-                                <i class="fas fa-camera"></i> Car Image
-                            </label>
-                            <div class="file-upload-area" id="fileUploadArea">
-                                <div class="file-upload-content">
-                                    <i class="fas fa-cloud-upload-alt"></i>
-                                    <p>Drag & drop your car image here or <span class="upload-link">browse files</span></p>
-                                    <p class="file-requirements">
-                                        <small>Supported formats: JPG, PNG, GIF • Max size: 5MB</small>
-                                    </p>
+                        <div class="form-group">
+                            <label for="images">Car Images</label>
+                            <div class="image-upload-container">
+                                <div class="image-preview-container" id="imagePreviewContainer">
+                                    <!-- Image previews will be added here -->
                                 </div>
-                                <input type="file" 
-                                       id="carImage" 
-                                       name="carImage" 
-                                       accept="image/*"
-                                       required>
-                            </div>
-                            <div id="imagePreview" class="image-preview" style="display: none;">
-                                <img id="previewImg" src="" alt="Car preview">
-                                <button type="button" id="removeImage" class="remove-image-btn">
-                                    <i class="fas fa-times"></i> Remove Image
-                                </button>
+                                <div id="dropZone" class="drop-zone">
+                                    <div class="upload-icon">📁</div>
+                                    <p>Drag and drop images here or click to select</p>
+                                    <input type="file" id="images" name="images" multiple accept="image/*" style="display: none;">
+                                </div>
+                                <div class="upload-hint">You can select multiple images. First image will be the main display image.</div>
                             </div>
                         </div>
 
@@ -644,74 +688,48 @@
             });
 
             // File upload functionality
-            const fileInput = document.getElementById('carImage');
-            const fileUploadArea = document.getElementById('fileUploadArea');
-            const imagePreview = document.getElementById('imagePreview');
-            const previewImg = document.getElementById('previewImg');
-            const removeImageBtn = document.getElementById('removeImage');
+            const imageInput = document.getElementById('images');
+            const previewContainer = document.getElementById('imagePreviewContainer');
 
-            // Handle file input change
-            fileInput.addEventListener('change', handleFileSelect);
-
-            // Handle drag and drop
-            fileUploadArea.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.add('dragover');
-            });
-
-            fileUploadArea.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.remove('dragover');
-            });
-
-            fileUploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                fileUploadArea.classList.remove('dragover');
+            imageInput.addEventListener('change', function() {
+                previewContainer.innerHTML = ''; // Clear existing previews
                 
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    fileInput.files = files;
-                    handleFileSelect();
+                if (this.files) {
+                    Array.from(this.files).forEach((file, index) => {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.className = 'image-preview';
+                            
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            
+                            const removeBtn = document.createElement('button');
+                            removeBtn.className = 'remove-image';
+                            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+                            removeBtn.onclick = function() {
+                                preview.remove();
+                                // Remove the file from the input
+                                const dt = new DataTransfer();
+                                const files = imageInput.files;
+                                for (let i = 0; i < files.length; i++) {
+                                    if (i !== index) {
+                                        dt.items.add(files[i]);
+                                    }
+                                }
+                                imageInput.files = dt.files;
+                            };
+                            
+                            preview.appendChild(img);
+                            preview.appendChild(removeBtn);
+                            previewContainer.appendChild(preview);
+                        };
+                        
+                        reader.readAsDataURL(file);
+                    });
                 }
             });
-
-            // Remove image handler
-            removeImageBtn.addEventListener('click', () => {
-                fileInput.value = '';
-                imagePreview.style.display = 'none';
-                fileUploadArea.classList.remove('has-file');
-            });
-
-            function handleFileSelect() {
-                const file = fileInput.files[0];
-                if (file) {
-                    // Validate file type
-                    if (!file.type.startsWith('image/')) {
-                        alert('Please select an image file.');
-                        fileInput.value = '';
-                        return;
-                    }
-
-                    // Validate file size (5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        alert('File size must be less than 5MB.');
-                        fileInput.value = '';
-                        return;
-                    }
-
-                    // Show preview
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        previewImg.src = e.target.result;
-                        imagePreview.style.display = 'block';
-                        fileUploadArea.classList.add('has-file');
-                    };
-                    reader.readAsDataURL(file);
-                } else {
-                    imagePreview.style.display = 'none';
-                    fileUploadArea.classList.remove('has-file');
-                }
-            }
 
             // Auto-format features input
             const featuresInput = document.getElementById('features');

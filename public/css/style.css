@@ -556,14 +556,23 @@ img {
     opacity: 1;
 }
 
-.car-card img {
+.car-image-container {
+    position: relative;
     width: 100%;
-    height: 250px;
-    object-fit: cover;
-    transition: transform var(--transition-slow);
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px 8px 0 0;
+    background-color: #f8f9fa;
 }
 
-.car-card:hover img {
+.car-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.car-card:hover .car-image-container img {
     transform: scale(1.05);
 }
 
@@ -620,6 +629,28 @@ img {
     background: rgba(239, 68, 68, 0.1);
     color: var(--error);
     border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.no-image {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.no-image i {
+    font-size: 48px;
+    margin-bottom: 10px;
+}
+
+.no-image p {
+    margin: 0;
+    font-size: 14px;
+    text-align: center;
 }
 
 /* ========================================
@@ -1889,4 +1920,157 @@ img {
     .result-amount {
         font-size: 1.3rem;
     }
+}
+
+/* Pagination Styles */
+.pagination {
+    margin-top: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+}
+
+.pagination-info {
+    color: #6b7280;
+    font-size: 0.95rem;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination-page {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 5px;
+    border-radius: 6px;
+    background-color: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pagination-page:hover {
+    background-color: #e5e7eb;
+}
+
+.pagination-page.active {
+    background-color: #2563eb;
+    color: white;
+}
+
+.pagination-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: #f3f4f6;
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+    background-color: #e5e7eb;
+}
+
+.pagination-ellipsis {
+    color: #6b7280;
+    padding: 0 4px;
+}
+
+/* Responsive Pagination */
+@media (max-width: 640px) {
+    .pagination-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .pagination-page {
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Language Switcher */
+.language-switcher {
+    display: flex;
+    align-items: center;
+    margin-right: 20px;
+}
+
+.language-switcher a {
+    color: #666;
+    text-decoration: none;
+    padding: 5px 10px;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.language-switcher a:hover {
+    color: #333;
+}
+
+.language-switcher a.active {
+    color: #007bff;
+    font-weight: 600;
+}
+
+.language-switcher span {
+    color: #ddd;
+    margin: 0 5px;
+}
+
+/* RTL Support */
+[lang="ar"] {
+    direction: rtl;
+    text-align: right;
+}
+
+[lang="ar"] .nav-right {
+    flex-direction: row-reverse;
+}
+
+[lang="ar"] .language-switcher {
+    margin-right: 0;
+    margin-left: 20px;
+}
+
+[lang="ar"] .nav-list {
+    padding-right: 0;
+}
+
+[lang="ar"] .car-info {
+    text-align: right;
+}
+
+[lang="ar"] .filter-group {
+    text-align: right;
+}
+
+[lang="ar"] .pagination-controls {
+    flex-direction: row-reverse;
+}
+
+/* Update nav-right to accommodate language switcher */
+.nav-right {
+    display: flex;
+    align-items: center;
 }

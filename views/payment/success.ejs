@@ -280,8 +280,15 @@
                 
                 <% bookings.forEach(booking => { %>
                     <div class="booking-item">
-                        <img src="<%= booking.car.image %>" alt="<%= booking.car.brand %> <%= booking.car.model %>" class="booking-image">
-                        
+                        <% if (booking.car.images && booking.car.images.length > 0) { %>
+                            <img src="<%= booking.car.images[0].startsWith('/') ? booking.car.images[0] : '/' + booking.car.images[0] %>" 
+                                 alt="<%= booking.car.brand %> <%= booking.car.model %>" 
+                                 class="booking-image">
+                        <% } else { %>
+                            <div class="booking-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-car" style="font-size: 2em; color: #9ca3af;"></i>
+                            </div>
+                        <% } %>
                         <div class="booking-details">
                             <h3><%= booking.car.brand %> <%= booking.car.model %></h3>
                             <div class="booking-info">
@@ -304,7 +311,7 @@
                             </div>
                         </div>
                         
-                        <div class="booking-price">$<%= booking.price %></div>
+                        <div class="booking-price">L.E <%= booking.price %></div>
                     </div>
                 <% }); %>
             </div>

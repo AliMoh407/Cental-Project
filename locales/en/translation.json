@@ -1,0 +1,59 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "signup": "Sign Up",
+    "logout": "Logout",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Submit",
+    "cancel": "Cancel"
+  },
+  "errors": {
+    "required": "This field is required",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidPassword": "Password must be at least 6 characters long"
+  },
+  "messages": {
+    "loginSuccess": "Successfully logged in",
+    "loginError": "Invalid email or password",
+    "signupSuccess": "Account created successfully"
+  },
+  "home": {
+    "hero": {
+      "title": "Find Your Perfect Ride",
+      "subtitle": "Choose from our wide selection of premium vehicles",
+      "searchButton": "Start Your Search"
+    },
+    "search": {
+      "title": "Search & Filter Cars",
+      "placeholder": "Search by brand, model, or features...",
+      "loading": "Searching cars...",
+      "filters": {
+        "brand": "Brand",
+        "allBrands": "All Brands",
+        "minPrice": "Min Price",
+        "maxPrice": "Max Price",
+        "year": "Year",
+        "anyYear": "Any Year",
+        "availability": "Availability",
+        "all": "All",
+        "available": "Available",
+        "notAvailable": "Not Available",
+        "apply": "Apply Filters"
+      }
+    },
+    "featured": {
+      "title": "Our Premium Fleet",
+      "perDay": "day",
+      "available": "Available",
+      "notAvailable": "Not Available",
+      "viewDetails": "View Details"
+    },
+    "pagination": {
+      "showing": "Showing {{start}} to {{end}} of {{total}} cars",
+      "previous": "Previous",
+      "next": "Next"
+    }
+  }
+} 

@@ -41,7 +41,7 @@ const upload = multer({
 });
 
 // Export multer instance for use in routes
-exports.uploadCarImage = upload.single('carImage');
+exports.uploadCarImages = upload.array('images', 5); // Allow up to 5 images
 
 // Display admin dashboard
 exports.getDashboard = async (req, res) => {
@@ -57,6 +57,15 @@ exports.getDashboard = async (req, res) => {
                 .sort({ createdAt: -1 }),
             Car.find().sort({ createdAt: -1 })
         ]);
+
+        // Log car data for debugging
+        console.log('Cars data:', cars.map(car => ({
+            id: car._id,
+            brand: car.brand,
+            model: car.model,
+            images: car.images
+        })));
+
         res.render('admin/dashboard', { 
             bookings, 
             cars,
@@ -84,35 +93,35 @@ exports.getAddCar = (req, res) => {
 exports.postAddCar = async (req, res) => {
     try {
         console.log("📋 Received car data:", req.body);
-        console.log("📸 Uploaded file:", req.file);
+        console.log("📸 Uploaded files:", req.files);
 
-        // Check if image was uploaded
-        if (!req.file) {
-            throw new Error('Car image is required');
+        // Check if images were uploaded
+        if (!req.files || req.files.length === 0) {
+            throw new Error('At least one car image is required');
         }
 
         const requiredFields = ['brand', 'model', 'year', 'price', 'description'];
         const missingFields = requiredFields.filter(field => !req.body[field]);
         
         if (missingFields.length > 0) {
-            // Clean up uploaded file if validation fails
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            // Clean up uploaded files if validation fails
+            if (req.files) {
+                req.files.forEach(file => fs.unlinkSync(file.path));
             }
             throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
         }
 
         const features = req.body.features ? req.body.features.split(',').map(f => f.trim()) : [];
         
-        // Use the uploaded file path
-        const imagePath = `/uploads/car-images/${req.file.filename}`;
+        // Use the uploaded file paths
+        const imagePaths = req.files.map(file => `/uploads/car-images/${file.filename}`);
         
         const newCar = new Car({
             brand: req.body.brand,
             model: req.body.model,
             year: parseInt(req.body.year),
             price: parseFloat(req.body.price),
-            image: imagePath,
+            images: imagePaths,
             description: req.body.description,
             features: features,
             available: req.body.available === 'on',
@@ -128,14 +137,16 @@ exports.postAddCar = async (req, res) => {
     } catch (err) {
         console.error("❌ Error adding car:", err);
         
-        // Clean up uploaded file if car creation fails
-        if (req.file) {
-            try {
-                fs.unlinkSync(req.file.path);
-                console.log("🗑️ Cleaned up uploaded file after error");
-            } catch (unlinkError) {
-                console.error("❌ Error cleaning up file:", unlinkError);
-            }
+        // Clean up uploaded files if car creation fails
+        if (req.files) {
+            req.files.forEach(file => {
+                try {
+                    fs.unlinkSync(file.path);
+                    console.log("🗑️ Cleaned up uploaded file after error");
+                } catch (unlinkError) {
+                    console.error("❌ Error cleaning up file:", unlinkError);
+                }
+            });
         }
         
         res.status(500).render('admin/add-car', {
@@ -173,7 +184,7 @@ exports.getEditCar = async (req, res) => {
 exports.postEditCar = async (req, res) => {
     try {
         console.log("📋 Updating car with data:", req.body);
-        console.log("📸 New uploaded file:", req.file);
+        console.log("📸 New uploaded files:", req.files);
 
         const {
             brand,
@@ -182,146 +193,174 @@ exports.postEditCar = async (req, res) => {
             price,
             description,
             features,
-            available
+            available,
+            deletedImages
         } = req.body;
 
         // Convert features string to array
         const featuresArray = features ? features.split(',').map(feature => feature.trim()) : [];
 
-        // Get the existing car to access current image
+        // Get the existing car to access current images
         const existingCar = await Car.findById(req.params.id);
         if (!existingCar) {
-            // Clean up uploaded file if car not found
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            // Clean up uploaded files if car not found
+            if (req.files) {
+                req.files.forEach(file => fs.unlinkSync(file.path));
             }
             return res.status(404).send('Car not found');
         }
 
-        let imagePath = existingCar.image; // Keep existing image by default
-
-        // If new image was uploaded, update the path and delete old image
-        if (req.file) {
-            imagePath = `/uploads/car-images/${req.file.filename}`;
-            
-            // Delete old image file if it exists and is not a URL
-            if (existingCar.image && existingCar.image.startsWith('/uploads/')) {
-                const oldImagePath = path.join(__dirname, '../public', existingCar.image);
-                if (fs.existsSync(oldImagePath)) {
-                    try {
-                        fs.unlinkSync(oldImagePath);
-                        console.log("🗑️ Deleted old car image:", existingCar.image);
-                    } catch (deleteError) {
-                        console.error("❌ Error deleting old image:", deleteError);
+        // Handle deleted images
+        let updatedImages = [...existingCar.images];
+        if (deletedImages) {
+            try {
+                const deletedImagesArray = JSON.parse(deletedImages);
+                deletedImagesArray.forEach(({ path }) => {
+                    // Remove from images array
+                    updatedImages = updatedImages.filter(img => img !== path);
+                    
+                    // Delete the file from the server
+                    const fullPath = path.join(__dirname, '../public', path);
+                    if (fs.existsSync(fullPath)) {
+                        fs.unlinkSync(fullPath);
+                        console.log("🗑️ Deleted image file:", path);
                     }
-                }
+                });
+            } catch (error) {
+                console.error("Error processing deleted images:", error);
             }
         }
 
-        const car = await Car.findByIdAndUpdate(
+        // Prepare update data
+        const updateData = {
+            brand,
+            model,
+            year: parseInt(year),
+            price: parseFloat(price),
+            description,
+            features: featuresArray,
+            available: available === 'on',
+            licenseNumber: req.body.licenseNumber || undefined,
+            images: updatedImages
+        };
+
+        // If new images were uploaded, add them to the existing images
+        if (req.files && req.files.length > 0) {
+            const newImagePaths = req.files.map(file => `/uploads/car-images/${file.filename}`);
+            updateData.images = [...updateData.images, ...newImagePaths];
+        }
+
+        // Update the car
+        const updatedCar = await Car.findByIdAndUpdate(
             req.params.id,
-            {
-                brand,
-                model,
-                year,
-                price,
-                image: imagePath,
-                description,
-                features: featuresArray,
-                available: available === 'true'
-            },
+            updateData,
             { new: true }
         );
 
-        console.log("✅ Car updated successfully:", car);
+        console.log("✅ Car updated successfully:", updatedCar);
         res.redirect('/admin/dashboard');
     } catch (error) {
-        console.error('❌ Error updating car:', error);
+        console.error("❌ Error updating car:", error);
         
-        // Clean up uploaded file if update fails
-        if (req.file) {
-            try {
-                fs.unlinkSync(req.file.path);
-                console.log("🗑️ Cleaned up uploaded file after error");
-            } catch (unlinkError) {
-                console.error("❌ Error cleaning up file:", unlinkError);
-            }
+        // Clean up uploaded files if update fails
+        if (req.files) {
+            req.files.forEach(file => {
+                try {
+                    fs.unlinkSync(file.path);
+                } catch (unlinkError) {
+                    console.error("❌ Error cleaning up file:", unlinkError);
+                }
+            });
         }
         
-        res.status(500).send('Error updating car');
+        res.status(500).render('admin/edit-car', {
+            title: 'Edit Car - Car Rental',
+            currentPage: 'admin',
+            error: error.message,
+            errors: null,
+            formData: req.body,
+            car: await Car.findById(req.params.id)
+        });
     }
 };
 
-// Update booking status
-exports.updateBookingStatus = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { status } = req.body;
-
-        if (!['pending', 'confirmed', 'cancelled'].includes(status)) {
-            return res.status(400).json({ error: 'Invalid status' });
-        }
-
-        const booking = await Booking.findByIdAndUpdate(
-            id,
-            { status },
-            { new: true }
-        );
-
-        if (!booking) {
-            return res.status(404).json({ error: 'Booking not found' });
-        }
-
-        res.json({ success: true, booking });
-    } catch (error) {
-        console.error('Error updating booking status:', error);
-        res.status(500).json({ error: 'Error updating booking status' });
-    }
-};
-
-// Delete car
+// Delete a car
 exports.deleteCar = async (req, res) => {
     try {
-        const car = await Car.findByIdAndDelete(req.params.id);
+        const car = await Car.findById(req.params.id);
         if (!car) {
-            return res.status(404).json({ error: 'Car not found' });
+            return res.status(404).json({ message: 'Car not found' });
         }
-        res.json({ success: true });
+
+        // Delete associated images
+        if (car.images && car.images.length > 0) {
+            car.images.forEach(imagePath => {
+                const fullPath = path.join(__dirname, '../public', imagePath);
+                if (fs.existsSync(fullPath)) {
+                    fs.unlinkSync(fullPath);
+                }
+            });
+        }
+
+        await Car.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Car deleted successfully' });
     } catch (error) {
         console.error('Error deleting car:', error);
-        res.status(500).json({ error: 'Error deleting car' });
+        res.status(500).json({ message: 'Error deleting car' });
     }
 };
 
 // Toggle car availability
 exports.toggleCarAvailability = async (req, res) => {
     try {
-        const { available } = req.body;
-        const car = await Car.findByIdAndUpdate(
-            req.params.id,
-            { available },
-            { new: true }
-        );
+        const car = await Car.findById(req.params.id);
         if (!car) {
-            return res.status(404).json({ error: 'Car not found' });
+            return res.status(404).json({ message: 'Car not found' });
         }
-        res.json({ success: true, car });
+
+        car.available = !car.available;
+        await car.save();
+        res.json({ message: 'Car availability updated', available: car.available });
     } catch (error) {
-        console.error('Error updating car availability:', error);
-        res.status(500).json({ error: 'Error updating car availability' });
+        console.error('Error toggling car availability:', error);
+        res.status(500).json({ message: 'Error updating car availability' });
+    }
+};
+
+// Update booking status
+exports.updateBookingStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!['pending', 'confirmed', 'cancelled', 'completed'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status' });
+        }
+
+        const booking = await Booking.findById(req.params.id);
+        if (!booking) {
+            return res.status(404).json({ message: 'Booking not found' });
+        }
+
+        booking.status = status;
+        await booking.save();
+        res.json({ message: 'Booking status updated', status: booking.status });
+    } catch (error) {
+        console.error('Error updating booking status:', error);
+        res.status(500).json({ message: 'Error updating booking status' });
     }
 };
 
 // Delete booking
 exports.deleteBooking = async (req, res) => {
     try {
-        const booking = await Booking.findByIdAndDelete(req.params.id);
+        const booking = await Booking.findById(req.params.id);
         if (!booking) {
-            return res.status(404).json({ error: 'Booking not found' });
+            return res.status(404).json({ message: 'Booking not found' });
         }
-        res.json({ success: true });
+
+        await Booking.findByIdAndDelete(req.params.id);
+        res.json({ message: 'Booking deleted successfully' });
     } catch (error) {
         console.error('Error deleting booking:', error);
-        res.status(500).json({ error: 'Error deleting booking' });
+        res.status(500).json({ message: 'Error deleting booking' });
     }
 }; 

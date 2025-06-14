@@ -167,6 +167,11 @@ class CarSearch {
         this.filterForm = document.getElementById('filter-form');
         this.carsContainer = document.getElementById('cars-container');
         this.loadingIndicator = document.getElementById('loading');
+        this.paginationContainer = document.querySelector('.pagination');
+        this.currentPage = 1;
+        this.currentLimit = 6;
+        this.currentQuery = '';
+        this.currentFilters = {};
         
         this.initEventListeners();
     }
@@ -178,7 +183,9 @@ class CarSearch {
             this.searchInput.addEventListener('input', (e) => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
-                    this.searchCars(e.target.value);
+                    this.currentPage = 1; // Reset to first page on new search
+                    this.currentQuery = e.target.value;
+                    this.searchCars(this.currentQuery);
                 }, 300);
             });
         }
@@ -187,16 +194,39 @@ class CarSearch {
         if (this.filterForm) {
             this.filterForm.addEventListener('submit', (e) => {
                 e.preventDefault();
+                this.currentPage = 1; // Reset to first page on new filter
                 this.filterCars();
             });
         }
+
+        // Handle pagination click events
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.pagination-page') || e.target.closest('.pagination-btn')) {
+                e.preventDefault();
+                const pageLink = e.target.closest('.pagination-page') || e.target.closest('.pagination-btn');
+                const href = pageLink.getAttribute('href');
+                const pageParam = new URLSearchParams(href.split('?')[1]).get('page');
+                
+                if (pageParam) {
+                    this.currentPage = parseInt(pageParam);
+                    
+                    if (Object.keys(this.currentFilters).length > 0) {
+                        this.filterCars();
+                    } else if (this.currentQuery) {
+                        this.searchCars(this.currentQuery);
+                    } else {
+                        window.location.href = href; // Use regular navigation if no active search/filter
+                    }
+                }
+            }
+        });
     }
 
     async searchCars(query) {
         try {
             this.showLoading();
             
-            const response = await fetch(`/api/cars/search?q=${encodeURIComponent(query)}`, {
+            const response = await fetch(`/api/cars/search?q=${encodeURIComponent(query)}&page=${this.currentPage}&limit=${this.currentLimit}`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json'
@@ -207,8 +237,9 @@ class CarSearch {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const cars = await response.json();
-            this.displayCars(cars);
+            const data = await response.json();
+            this.displayCars(data.cars);
+            this.updatePagination(data.pagination);
             
         } catch (error) {
             console.error('Search error:', error);
@@ -223,9 +254,13 @@ class CarSearch {
             this.showLoading();
             
             const formData = new FormData(this.filterForm);
-            const filters = Object.fromEntries(formData.entries());
+            this.currentFilters = Object.fromEntries(formData.entries());
             
-            const queryString = new URLSearchParams(filters).toString();
+            // Add pagination parameters
+            this.currentFilters.page = this.currentPage;
+            this.currentFilters.limit = this.currentLimit;
+            
+            const queryString = new URLSearchParams(this.currentFilters).toString();
             
             const response = await fetch(`/api/cars/filter?${queryString}`, {
                 method: 'GET',
@@ -238,8 +273,9 @@ class CarSearch {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            const cars = await response.json();
-            this.displayCars(cars);
+            const data = await response.json();
+            this.displayCars(data.cars);
+            this.updatePagination(data.pagination);
             
         } catch (error) {
             console.error('Filter error:', error);
@@ -251,71 +287,171 @@ class CarSearch {
 
     displayCars(cars) {
         if (!this.carsContainer) return;
-
+        
         if (cars.length === 0) {
             this.carsContainer.innerHTML = `
                 <div class="no-results">
-                    <h3>No cars found</h3>
-                    <p>Try adjusting your search criteria.</p>
-                </div>
-            `;
-            return;
-        }
-
-        this.carsContainer.innerHTML = cars.map(car => `
-            <div class="car-card" data-car-id="${car._id}">
-                <img src="${car.image}" alt="${car.brand} ${car.model}" loading="lazy">
-                <div class="car-info">
-                    <h3>${car.brand} ${car.model}</h3>
-                    <p class="year">${car.year}</p>
-                    <p class="price">$${car.price}/day</p>
-                    <div class="availability ${car.available ? 'available' : 'unavailable'}">
-                        ${car.available ? 'Available' : 'Not Available'}
-                    </div>
-                    <button class="btn-primary" onclick="viewCarDetails('${car._id}')">
-                        View Details
+                    <i class="fas fa-search"></i>
+                    <p>No cars found matching your criteria.</p>
+                    <button class="btn btn-secondary" onclick="window.location.reload()">
+                        Reset Search
                     </button>
                 </div>
-            </div>
-        `).join('');
+            `;
+            if (this.paginationContainer) {
+                this.paginationContainer.style.display = 'none';
+            }
+            return;
+        }
+        
+        let html = '';
+        
+        cars.forEach(car => {
+            html += `
+                <div class="car-card" data-car-id="${car._id}">
+                    <div class="car-image-container">
+                        ${car.images && car.images.length > 0 ? 
+                            `<img src="${car.images[0].startsWith('/') ? car.images[0] : '/' + car.images[0]}" 
+                                  alt="${car.brand} ${car.model}" 
+                                  loading="lazy">` :
+                            `<div class="no-image">
+                                <i class="fas fa-car"></i>
+                                <p>No Image Available</p>
+                            </div>`
+                        }
+                    </div>
+                    <div class="car-info">
+                        <h3>${car.brand} ${car.model}</h3>
+                        <p class="year">${car.year}</p>
+                        <p class="price">L.E ${car.price}/day</p>
+                        <div class="availability ${car.available ? 'available' : 'unavailable'}">
+                            ${car.available ? 'Available' : 'Not Available'}
+                        </div>
+                        <button class="btn btn-primary" onclick="viewCarDetails('${car._id}')">
+                            <i class="fas fa-eye"></i> View Details
+                        </button>
+                    </div>
+                </div>
+            `;
+        });
+        
+        this.carsContainer.innerHTML = html;
+    }
+
+    updatePagination(pagination) {
+        if (!this.paginationContainer || !pagination) return;
+        
+        if (pagination.totalPages <= 1) {
+            this.paginationContainer.style.display = 'none';
+            return;
+        }
+        
+        this.paginationContainer.style.display = 'flex';
+        
+        const paginationInfo = this.paginationContainer.querySelector('.pagination-info');
+        if (paginationInfo) {
+            paginationInfo.textContent = `Showing ${(pagination.page - 1) * pagination.limit + 1} to ${Math.min(pagination.page * pagination.limit, pagination.totalCars)} of ${pagination.totalCars} cars`;
+        }
+        
+        const paginationControls = this.paginationContainer.querySelector('.pagination-controls');
+        if (!paginationControls) return;
+        
+        let html = '';
+        
+        // Previous button
+        if (pagination.hasPrevPage) {
+            html += `
+                <a href="/?page=${pagination.prevPage}" class="pagination-btn">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </a>
+            `;
+        }
+        
+        // Page numbers
+        html += '<div class="pagination-pages">';
+        
+        let startPage = Math.max(1, pagination.page - 2);
+        let endPage = Math.min(pagination.totalPages, pagination.page + 2);
+        
+        if (startPage > 1) {
+            html += `
+                <a href="/?page=1" class="pagination-page ${pagination.page === 1 ? 'active' : ''}">1</a>
+            `;
+            if (startPage > 2) {
+                html += '<span class="pagination-ellipsis">...</span>';
+            }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+            html += `
+                <a href="/?page=${i}" class="pagination-page ${pagination.page === i ? 'active' : ''}">
+                    ${i}
+                </a>
+            `;
+        }
+        
+        if (endPage < pagination.totalPages) {
+            if (endPage < pagination.totalPages - 1) {
+                html += '<span class="pagination-ellipsis">...</span>';
+            }
+            html += `
+                <a href="/?page=${pagination.totalPages}" class="pagination-page ${pagination.page === pagination.totalPages ? 'active' : ''}">
+                    ${pagination.totalPages}
+                </a>
+            `;
+        }
+        
+        html += '</div>';
+        
+        // Next button
+        if (pagination.hasNextPage) {
+            html += `
+                <a href="/?page=${pagination.nextPage}" class="pagination-btn">
+                    Next <i class="fas fa-chevron-right"></i>
+                </a>
+            `;
+        }
+        
+        paginationControls.innerHTML = html;
     }
 
     showLoading() {
         if (this.loadingIndicator) {
-            this.loadingIndicator.style.display = 'block';
+            this.loadingIndicator.style.display = 'flex';
         }
     }
-
+    
     hideLoading() {
         if (this.loadingIndicator) {
             this.loadingIndicator.style.display = 'none';
         }
     }
-
+    
     showError(message) {
-        let errorDiv = document.getElementById('error-message');
-        if (!errorDiv) {
-            errorDiv = document.createElement('div');
-            errorDiv.id = 'error-message';
-            errorDiv.className = 'error-message';
-            errorDiv.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #ff4444;
-                color: white;
-                padding: 15px;
-                border-radius: 5px;
-                z-index: 1000;
-            `;
-            document.body.appendChild(errorDiv);
-        }
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
+        // Display error message
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'search-error';
+        errorDiv.innerHTML = `
+            <div class="error-content">
+                <i class="fas fa-exclamation-circle"></i>
+                <p>${message}</p>
+                <button class="close-error">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        `;
         
+        document.body.appendChild(errorDiv);
+        
+        // Auto-remove after 5 seconds
         setTimeout(() => {
-            errorDiv.style.display = 'none';
+            errorDiv.remove();
         }, 5000);
+        
+        // Close button
+        errorDiv.querySelector('.close-error').addEventListener('click', () => {
+            errorDiv.remove();
+        });
     }
 }
 
@@ -802,5 +938,59 @@ document.addEventListener('click', (e) => {
         dropdown.style.opacity = '0';
     }
 });
+
+// Car Management Functions
+async function toggleCarAvailability(carId, newStatus) {
+    try {
+        const response = await fetch(`/admin/cars/${carId}/toggle-availability`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ available: newStatus })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to update car availability');
+        }
+
+        const result = await response.json();
+        
+        // Show success message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message success';
+        messageDiv.innerHTML = `
+            <i class="fas fa-check-circle"></i>
+            Car ${result.available ? 'enabled' : 'disabled'} successfully
+        `;
+        document.body.appendChild(messageDiv);
+        
+        // Remove message after 3 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+
+        // Refresh the page to show updated status
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    } catch (error) {
+        console.error('Error toggling car availability:', error);
+        
+        // Show error message
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'message error';
+        messageDiv.innerHTML = `
+            <i class="fas fa-exclamation-circle"></i>
+            ${error.message}
+        `;
+        document.body.appendChild(messageDiv);
+        
+        // Remove message after 3 seconds
+        setTimeout(() => {
+            messageDiv.remove();
+        }, 3000);
+    }
+}
 
 console.log('AJAX features script loaded'); 

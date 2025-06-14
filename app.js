@@ -27,6 +27,34 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// === i18next Configuration ===
+const i18next = require('i18next');
+const i18nextMiddleware = require('i18next-http-middleware');
+const Backend = require('i18next-fs-backend');
+const i18nMiddleware = require('./middleware/i18n');
+
+i18next
+  .use(Backend)
+  .use(i18nextMiddleware.LanguageDetector)
+  .init({
+    backend: {
+      loadPath: path.join(__dirname, 'locales/{{lng}}/{{ns}}.json'),
+    },
+    fallbackLng: 'en',
+    preload: ['en', 'ar'],
+    ns: ['translation'],
+    defaultNS: 'translation',
+    detection: {
+      order: ['querystring', 'cookie', 'header'],
+      lookupCookie: 'i18next',
+      lookupQuerystring: 'lng',
+      caches: ['cookie']
+    }
+  });
+
+app.use(i18nextMiddleware.handle(i18next));
+app.use(i18nMiddleware);
+
 // === Session Configuration ===
 app.use(session({
   secret: process.env.SESSION_SECRET || 'your-secret-key-change-this-in-production',
@@ -109,7 +137,7 @@ try {
     
     // Start the server after MongoDB connects
     server.listen(port, '0.0.0.0', () => {
-      console.log(`🚗 Car Rental app running at http://localhost:${port}`);
+  console.log(`🚗 Car Rental app running at http://localhost:${port}`);
       console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`🔗 MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
       console.log(`�� Session Secret: ${process.env.SESSION_SECRET ? 'Configured' : 'Not configured'}`);

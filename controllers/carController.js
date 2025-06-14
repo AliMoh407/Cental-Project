@@ -1,14 +1,38 @@
 const Car = require('../models/Car');
 const Booking = require('../models/Booking');
 
-// Display homepage with cars
+// Display homepage with cars (with pagination)
 exports.getHomepage = async (req, res) => {
   try {
-    const cars = await Car.find();
+    // Get pagination parameters from query string
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6; // 6 cars per page
+    const skip = (page - 1) * limit;
+    
+    // Count total cars for pagination
+    const totalCars = await Car.countDocuments();
+    const totalPages = Math.ceil(totalCars / limit);
+    
+    // Get cars for current page
+    const cars = await Car.find()
+      .sort({ createdAt: -1, _id: 1 }) // More stable sort order
+      .skip(skip)
+      .limit(limit);
+    
     res.render('homepage', {
       title: 'Cental - Your Journey Starts Here',
       currentPage: 'home',
-      cars: cars
+      cars: cars,
+      pagination: {
+        page,
+        limit,
+        totalCars,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        nextPage: page + 1,
+        prevPage: page - 1
+      }
     });
   } catch (err) {
     console.error("Error fetching cars:", err);
@@ -52,10 +76,14 @@ exports.getAllCars = async (req, res) => {
 // API: Search cars
 exports.searchCars = async (req, res) => {
   try {
-    const { q } = req.query;
+    const { q, page = 1, limit = 6 } = req.query;
     const searchRegex = new RegExp(q, 'i'); // Case-insensitive search
     
-    const cars = await Car.find({
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Count total matching cars
+    const totalCars = await Car.countDocuments({
       $or: [
         { brand: searchRegex },
         { model: searchRegex },
@@ -63,7 +91,34 @@ exports.searchCars = async (req, res) => {
       ]
     });
     
-    res.json(cars);
+    // Get paginated results
+    const cars = await Car.find({
+      $or: [
+        { brand: searchRegex },
+        { model: searchRegex },
+        { description: searchRegex }
+      ]
+    })
+    .sort({ createdAt: -1, _id: 1 }) // More stable sort order
+    .skip(skip)
+    .limit(parseInt(limit));
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCars / parseInt(limit));
+    
+    res.json({
+      cars,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalCars,
+        totalPages,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1,
+        nextPage: parseInt(page) + 1,
+        prevPage: parseInt(page) - 1
+      }
+    });
   } catch (error) {
     console.error('Search error:', error);
     res.status(500).json({ error: 'Search failed' });
@@ -73,7 +128,7 @@ exports.searchCars = async (req, res) => {
 // API: Filter cars
 exports.filterCars = async (req, res) => {
   try {
-    const { brand, minPrice, maxPrice, year, available } = req.query;
+    const { brand, minPrice, maxPrice, year, available, page = 1, limit = 6 } = req.query;
     
     const filter = {};
     
@@ -83,8 +138,34 @@ exports.filterCars = async (req, res) => {
     if (year) filter.year = parseInt(year);
     if (available) filter.available = available === 'true';
     
-    const cars = await Car.find(filter);
-    res.json(cars);
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Count total matching cars
+    const totalCars = await Car.countDocuments(filter);
+    
+    // Get paginated results
+    const cars = await Car.find(filter)
+      .sort({ createdAt: -1, _id: 1 }) // More stable sort order
+      .skip(skip)
+      .limit(parseInt(limit));
+    
+    // Calculate pagination info
+    const totalPages = Math.ceil(totalCars / parseInt(limit));
+    
+    res.json({
+      cars,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        totalCars,
+        totalPages,
+        hasNextPage: parseInt(page) < totalPages,
+        hasPrevPage: parseInt(page) > 1,
+        nextPage: parseInt(page) + 1,
+        prevPage: parseInt(page) - 1
+      }
+    });
   } catch (error) {
     console.error('Filter error:', error);
     res.status(500).json({ error: 'Filter failed' });

@@ -25,35 +25,46 @@
             
             <!-- Main Navigation -->
             <nav class="main-nav">
-                <ul class="nav-list">
-                    <li class="nav-item">
-                        <a href="/" class="nav-link <%= currentPage === 'home' ? 'active' : '' %>">
-                            <i class="fas fa-home"></i>
-                            <span>Home</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/about" class="nav-link <%= currentPage === 'about' ? 'active' : '' %>">
-                            <i class="fas fa-info-circle"></i>
-                            <span>About Us</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/contact" class="nav-link <%= currentPage === 'contact' ? 'active' : '' %>">
-                            <i class="fas fa-envelope"></i>
-                            <span>Contact Us</span>
-                        </a>
-                    </li>
-                    
-                    <% if (isLoggedIn && isAdmin) { %>
+                <div class="nav-left">
+                    <a href="/" class="logo">Car Rental</a>
+                </div>
+                <div class="nav-right">
+                    <!-- Language Switcher -->
+                    <div class="language-switcher">
+                        <a href="?lng=en" class="<%= currentLanguage === 'en' ? 'active' : '' %>">English</a>
+                        <span>|</span>
+                        <a href="?lng=ar" class="<%= currentLanguage === 'ar' ? 'active' : '' %>">العربية</a>
+                    </div>
+                    <ul class="nav-list">
                         <li class="nav-item">
-                            <a href="/admin/dashboard" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">
-                                <i class="fas fa-tachometer-alt"></i>
-                                <span>Dashboard</span>
+                            <a href="/" class="nav-link <%= currentPage === 'home' ? 'active' : '' %>">
+                                <i class="fas fa-home"></i>
+                                <span>Home</span>
                             </a>
                         </li>
-                    <% } %>
-                </ul>
+                        <li class="nav-item">
+                            <a href="/about" class="nav-link <%= currentPage === 'about' ? 'active' : '' %>">
+                                <i class="fas fa-info-circle"></i>
+                                <span>About Us</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="/contact" class="nav-link <%= currentPage === 'contact' ? 'active' : '' %>">
+                                <i class="fas fa-envelope"></i>
+                                <span>Contact Us</span>
+                            </a>
+                        </li>
+                        
+                        <% if (isLoggedIn && isAdmin) { %>
+                            <li class="nav-item">
+                                <a href="/admin/dashboard" class="nav-link <%= currentPage === 'admin' ? 'active' : '' %>">
+                                    <i class="fas fa-tachometer-alt"></i>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                        <% } %>
+                    </ul>
+                </div>
             </nav>
 
             <!-- User Section -->
@@ -89,10 +100,6 @@
                                 </div>
                             </div>
                             <div class="dropdown-menu">
-                                <a href="/profile" class="dropdown-item">
-                                    <i class="fas fa-user"></i>
-                                    <span>My Profile</span>
-                                </a>
                                 <a href="/bookings" class="dropdown-item">
                                     <i class="fas fa-calendar-alt"></i>
                                     <span>My Bookings</span>
@@ -193,10 +200,6 @@
                             </a></li>
                         <% } %>
                         <li class="nav-divider"></li>
-                        <li><a href="/profile" onclick="closeMobileMenu()" class="mobile-nav-link">
-                            <i class="fas fa-user"></i>
-                            <span>My Profile</span>
-                        </a></li>
                         <li><a href="/bookings" onclick="closeMobileMenu()" class="mobile-nav-link">
                             <i class="fas fa-calendar-alt"></i>
                             <span>My Bookings</span>

@@ -708,13 +708,21 @@
                 <!-- Cart Items -->
                 <% cart.items.forEach(item => { %>
                     <div class="cart-item-summary">
-                        <img src="/images/<%= item.car.image %>" alt="<%= item.car.brand %> <%= item.car.model %>" class="item-image">
+                        <% if (item.car.images && item.car.images.length > 0) { %>
+                            <img src="<%= item.car.images[0].startsWith('/') ? item.car.images[0] : '/' + item.car.images[0] %>" 
+                                 alt="<%= item.car.brand %> <%= item.car.model %>" 
+                                 class="item-image">
+                        <% } else { %>
+                            <div class="item-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center;">
+                                <i class="fas fa-car" style="font-size: 2em; color: #9ca3af;"></i>
+                            </div>
+                        <% } %>
                         <div class="item-details">
                             <h4><%= item.car.brand %> <%= item.car.model %></h4>
                             <p><%= new Date(item.pickupDate).toLocaleDateString() %> - <%= new Date(item.returnDate).toLocaleDateString() %></p>
                             <p><%= item.pickupLocation %> • <%= item.totalDays %> day<%= item.totalDays > 1 ? 's' : '' %></p>
                         </div>
-                        <div class="item-price">$<%= item.totalPrice %></div>
+                        <div class="item-price">L.E <%= item.totalPrice %></div>
                     </div>
                 <% }); %>
 

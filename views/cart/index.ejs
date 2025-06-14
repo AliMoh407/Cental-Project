@@ -271,7 +271,14 @@
                     <% cart.items.forEach(item => { %>
                         <div class="cart-item" data-item-id="<%= item._id %>">
                             <div class="cart-item-image">
-                                <img src="<%= item.car.image %>" alt="<%= item.car.brand %> <%= item.car.model %>">
+                                <% if (item.car.images && item.car.images.length > 0) { %>
+                                    <img src="<%= item.car.images[0].startsWith('/') ? item.car.images[0] : '/' + item.car.images[0] %>" 
+                                         alt="<%= item.car.brand %> <%= item.car.model %>">
+                                <% } else { %>
+                                    <div style="width: 100%; height: 100px; background: #e5e7eb; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-lg);">
+                                        <i class="fas fa-car" style="font-size: 2em; color: #9ca3af;"></i>
+                                    </div>
+                                <% } %>
                             </div>
                             
                             <div class="cart-item-details">
