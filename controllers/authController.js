@@ -18,33 +18,10 @@ exports.getLogin = (req, res) => {
 // Process login form
 exports.postLogin = async (req, res) => {
   const { email, password } = req.body;
-
+  
   try {
-    console.log(`🔍 Login attempt: ${email}`);
-    
-    const user = await User.findOne({ email: email.toLowerCase().trim() });
-    console.log(`👤 User found:`, user ? `${user.name} (${user.email}) - Admin: ${user.isAdmin}` : 'No user found');
-    
-    // Check password using bcrypt or plain text (for backward compatibility)
-    let passwordValid = false;
-    if (user) {
-      if (user.isPasswordHashed()) {
-        // Use bcrypt for hashed passwords
-        passwordValid = await user.comparePassword(password);
-        console.log(`🔐 Using bcrypt password verification`);
-      } else {
-        // Fallback for existing plain text passwords
-        passwordValid = user.password === password;
-        console.log(`⚠️  Using plain text password verification (will be updated on next login)`);
-        
-        // Update to hashed password for next time
-        if (passwordValid) {
-          user.password = password; // This will trigger the pre-save hook to hash it
-          await user.save();
-          console.log(`🔄 Password updated to hashed version`);
-        }
-      }
-    }
+    const user = await User.findOne({ email });
+    const passwordValid = user ? await bcrypt.compare(password, user.password) : false;
     
     if (user && passwordValid) {
       req.session.user = {
@@ -54,19 +31,13 @@ exports.postLogin = async (req, res) => {
       };
       req.session.isAdmin = user.isAdmin || false;
       
-      console.log(`✅ Login successful for ${user.name}`);
-      console.log(`🔐 Session created - Admin: ${req.session.isAdmin}`);
-      
       // Redirect based on user type
       if (req.session.isAdmin) {
-        console.log(`🚀 Redirecting admin to dashboard`);
         res.redirect('/admin/dashboard');
       } else {
-        console.log(`🚀 Redirecting user to homepage`);
         res.redirect('/');
       }
     } else {
-      console.log(`❌ Login failed - Invalid credentials`);
       res.render('auth/login', {
         title: 'Login - Car Rental',
         currentPage: 'login',
@@ -76,7 +47,6 @@ exports.postLogin = async (req, res) => {
       });
     }
   } catch (err) {
-    console.error('Login error:', err);
     res.render('auth/login', {
       title: 'Login - Car Rental',
       currentPage: 'login',

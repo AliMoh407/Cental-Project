@@ -4,7 +4,6 @@ exports.submitContactForm = async (req, res) => {
     const { name, email, subject, message } = req.body;
     
     // Here you would typically save to database and/or send email
-    console.log('Contact form submission:', { name, email, subject, message });
     
     // For now, just return success
     res.json({ 
@@ -13,7 +12,6 @@ exports.submitContactForm = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Contact form error:', error);
     res.status(500).json({ error: 'Failed to send message' });
   }
 }; 

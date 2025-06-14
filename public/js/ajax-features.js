@@ -702,7 +702,7 @@ class BookingManager {
             this.updateAvailabilityDisplay(result.available, result.message);
 
         } catch (error) {
-            console.error('Availability check error:', error);
+            this.showErrorMessage('Failed to check availability. Please try again.');
         }
     }
 

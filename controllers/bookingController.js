@@ -4,8 +4,6 @@ const Payment = require('../models/Payment');
 
 // Create a new booking
 exports.createBooking = async (req, res) => {
-  console.log("📦 Booking form data:", req.body);
-
   const { carId, pickupDate, returnDate, pickupLocation } = req.body;
 
   try {
@@ -33,11 +31,9 @@ exports.createBooking = async (req, res) => {
     });
 
     await booking.save();
-    console.log(`✅ Booking saved for user: ${req.session.user.email}`);
-    res.send("✅ Booking saved to MongoDB Atlas!");
+    res.send("Booking saved successfully!");
   } catch (err) {
-    console.error("❌ Error saving booking:", err);
-    res.status(500).send("❌ Failed to save booking.");
+    res.status(500).send("Failed to save booking.");
   }
 };
 
@@ -79,7 +75,6 @@ exports.apiCreateBooking = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Booking creation error:', error);
     res.status(500).json({ error: 'Failed to create booking' });
   }
 };
@@ -90,8 +85,6 @@ exports.getUserBookings = async (req, res) => {
     if (!req.session.user) {
       return res.redirect('/auth/login');
     }
-
-    console.log('📋 Fetching bookings for user:', req.session.user.id);
 
     const bookings = await Booking.find({ user: req.session.user.id })
       .populate('car')
@@ -104,16 +97,12 @@ exports.getUserBookings = async (req, res) => {
       .sort({ createdAt: -1 })
       .lean(); // Use lean for better performance
 
-    console.log(`✅ Found ${bookings.length} bookings for user`);
-
     res.render('bookings/index', {
       title: 'My Bookings - Car Rental',
       currentPage: 'bookings',
       bookings: bookings || []
     });
   } catch (error) {
-    console.error('❌ Error fetching user bookings:', error);
-    
     // Fallback: try to get bookings without payment population
     try {
       const basicBookings = await Booking.find({ user: req.session.user.id })
@@ -121,15 +110,12 @@ exports.getUserBookings = async (req, res) => {
         .sort({ createdAt: -1 })
         .lean();
       
-      console.log('⚠️ Fallback: showing bookings without payment data');
-      
       res.render('bookings/index', {
         title: 'My Bookings - Car Rental',
         currentPage: 'bookings',
         bookings: basicBookings || []
       });
     } catch (fallbackError) {
-      console.error('❌ Fallback also failed:', fallbackError);
       res.status(500).render('error', {
         title: 'Error - Car Rental',
         message: 'Unable to load bookings. Please try again later.',
@@ -148,7 +134,6 @@ exports.getAllBookings = async (req, res) => {
       .sort({ createdAt: -1 });
     res.json(bookings);
   } catch (error) {
-    console.error('Error fetching bookings:', error);
     res.status(500).json({ error: 'Failed to fetch bookings' });
   }
 };
@@ -174,7 +159,6 @@ exports.updateBookingStatus = async (req, res) => {
     
     res.json({ success: true, booking });
   } catch (error) {
-    console.error('Status update error:', error);
     res.status(500).json({ error: 'Failed to update status' });
   }
 }; 

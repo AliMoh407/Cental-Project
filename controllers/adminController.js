@@ -58,14 +58,6 @@ exports.getDashboard = async (req, res) => {
             Car.find().sort({ createdAt: -1 })
         ]);
 
-        // Log car data for debugging
-        console.log('Cars data:', cars.map(car => ({
-            id: car._id,
-            brand: car.brand,
-            model: car.model,
-            images: car.images
-        })));
-
         res.render('admin/dashboard', { 
             bookings, 
             cars,
@@ -73,7 +65,6 @@ exports.getDashboard = async (req, res) => {
             currentPage: 'admin'
         });
     } catch (error) {
-        console.error('Error fetching dashboard data:', error);
         res.status(500).send('Error loading dashboard');
     }
 };
@@ -135,16 +126,13 @@ exports.postAddCar = async (req, res) => {
 
         res.redirect('/admin/dashboard');
     } catch (err) {
-        console.error("❌ Error adding car:", err);
-        
         // Clean up uploaded files if car creation fails
         if (req.files) {
             req.files.forEach(file => {
                 try {
                     fs.unlinkSync(file.path);
-                    console.log("🗑️ Cleaned up uploaded file after error");
                 } catch (unlinkError) {
-                    console.error("❌ Error cleaning up file:", unlinkError);
+                    // Silent fail - we tried our best to clean up
                 }
             });
         }
@@ -175,7 +163,6 @@ exports.getEditCar = async (req, res) => {
             error: null
         });
     } catch (error) {
-        console.error('Error fetching car:', error);
         res.status(500).send('Error loading car details');
     }
 };
@@ -183,9 +170,6 @@ exports.getEditCar = async (req, res) => {
 // Process edit car form
 exports.postEditCar = async (req, res) => {
     try {
-        console.log("📋 Updating car with data:", req.body);
-        console.log("📸 New uploaded files:", req.files);
-
         const {
             brand,
             model,
@@ -260,27 +244,7 @@ exports.postEditCar = async (req, res) => {
         console.log("✅ Car updated successfully:", updatedCar);
         res.redirect('/admin/dashboard');
     } catch (error) {
-        console.error("❌ Error updating car:", error);
-        
-        // Clean up uploaded files if update fails
-        if (req.files) {
-            req.files.forEach(file => {
-                try {
-                    fs.unlinkSync(file.path);
-                } catch (unlinkError) {
-                    console.error("❌ Error cleaning up file:", unlinkError);
-                }
-            });
-        }
-        
-        res.status(500).render('admin/edit-car', {
-            title: 'Edit Car - Car Rental',
-            currentPage: 'admin',
-            error: error.message,
-            errors: null,
-            formData: req.body,
-            car: await Car.findById(req.params.id)
-        });
+        res.status(500).send('Error updating car');
     }
 };
 

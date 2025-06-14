@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/bookings.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <style>
@@ -79,8 +80,8 @@
                                          alt="<%= booking.car.brand %> <%= booking.car.model %>" 
                                          class="car-image">
                                 <% } else { %>
-                                    <div class="car-image" style="background: #e5e7eb; display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-car" style="font-size: 2em; color: #9ca3af;"></i>
+                                    <div class="car-image placeholder">
+                                        <i class="fas fa-car"></i>
                                     </div>
                                 <% } %>
                             </div>
@@ -122,7 +123,7 @@
                                         <p><strong>Document Status:</strong> ✅ Verified and uploaded</p>
                                         <p><strong>Upload Date:</strong> <%= new Date(booking.paymentId.createdAt).toLocaleDateString() %></p>
                                         <p><strong>Transaction ID:</strong> <%= booking.paymentId.transactionId %></p>
-                                        <p style="font-size: 0.8em; color: #6b7280;"><i class="fas fa-info-circle"></i> Click on the ID image to view full size</p>
+                                        <p><i class="fas fa-info-circle"></i> Click on the ID image to view full size</p>
                                     </div>
                                 </div>
                             </div>

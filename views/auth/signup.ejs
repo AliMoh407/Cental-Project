@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Car Rental</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/auth.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* Signup Page Specific Styles */
@@ -284,197 +285,127 @@
     </style>
 </head>
 <body>
-    <main class="signup-main">
-        <a href="/" class="back-to-home">
-            <i class="fas fa-arrow-left"></i>
-            Back to Home
-        </a>
-
-        <div class="signup-container">
-            <div class="signup-header">
-                <div class="signup-logo">
+    <main class="auth-main">
+        <div class="auth-container">
+            <div class="auth-header">
+                <div class="auth-logo">
                     <i class="fas fa-car"></i>
                 </div>
-                <h1 class="signup-title">Join Us Today</h1>
-                <p class="signup-subtitle">Create your account to get started</p>
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join our car rental community</p>
             </div>
-
-            <div class="signup-body">
+            <div class="auth-body">
                 <% if (error) { %>
                     <div class="error-alert">
-                        <i class="fas fa-exclamation-triangle"></i>
+                        <i class="fas fa-exclamation-circle"></i>
                         <%= error %>
                     </div>
                 <% } %>
-
-                <form action="/signup" method="POST" id="signupForm">
+                <form action="/signup" method="POST">
                     <div class="form-group">
                         <label for="name">Full Name</label>
                         <div class="input-wrapper">
-                            <input 
-                                type="text" 
-                                id="name" 
-                                name="name" 
-                                class="form-input <%= errors && errors.name ? 'input-error' : '' %>"
-                                placeholder="Enter your full name"
-                                value="<%= formData && formData.name ? formData.name : '' %>"
-                                required
-                            >
-                            <% if (errors && errors.name) { %>
-                                <div class="field-error">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    <%= errors.name %>
-                                </div>
-                            <% } %>
+                            <i class="fas fa-user input-icon"></i>
+                            <input type="text" id="name" name="name" class="form-input" placeholder="Enter your full name" required>
                         </div>
                     </div>
-
                     <div class="form-group">
                         <label for="email">Email Address</label>
                         <div class="input-wrapper">
-                            <input 
-                                type="email" 
-                                id="email" 
-                                name="email" 
-                                class="form-input <%= errors && errors.email ? 'input-error' : '' %>"
-                                placeholder="Enter your email address"
-                                value="<%= formData && formData.email ? formData.email : '' %>"
-                                required
-                            >
-                            <% if (errors && errors.email) { %>
-                                <div class="field-error">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                    <%= errors.email %>
-                                </div>
-                            <% } %>
+                            <i class="fas fa-envelope input-icon"></i>
+                            <input type="email" id="email" name="email" class="form-input" placeholder="Enter your email" required>
                         </div>
                     </div>
-
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="password">Password</label>
-                            <div class="input-wrapper">
-                                <input 
-                                    type="password" 
-                                    id="password" 
-                                    name="password" 
-                                    class="form-input password-input <%= errors && errors.password ? 'input-error' : '' %>"
-                                    placeholder="Choose a password"
-                                    required
-                                >
-                                <i class="fas fa-eye password-toggle" onclick="togglePassword('password')"></i>
-                                <% if (errors && errors.password) { %>
-                                    <div class="field-error">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        <%= errors.password %>
-                                    </div>
-                                <% } %>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password</label>
-                            <div class="input-wrapper">
-                                <input 
-                                    type="password" 
-                                    id="confirmPassword" 
-                                    name="confirmPassword" 
-                                    class="form-input password-input <%= errors && errors.confirmPassword ? 'input-error' : '' %>"
-                                    placeholder="Confirm your password"
-                                    required
-                                >
-                                <i class="fas fa-eye password-toggle" onclick="togglePassword('confirmPassword')"></i>
-                                <% if (errors && errors.confirmPassword) { %>
-                                    <div class="field-error">
-                                        <i class="fas fa-exclamation-circle"></i>
-                                        <%= errors.confirmPassword %>
-                                    </div>
-                                <% } %>
-                            </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone input-icon"></i>
+                            <input type="tel" id="phone" name="phone" class="form-input" placeholder="Enter your phone number" required>
                         </div>
                     </div>
-
-                    <div class="password-requirements">
-                        <div style="font-weight: 600; margin-bottom: 8px;">
-                            <i class="fas fa-shield-alt"></i> Password Requirements:
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="password" name="password" class="form-input password-input" placeholder="Create a password" required>
+                            <i class="fas fa-eye password-toggle" id="passwordToggle"></i>
                         </div>
-                        <ul style="margin: 0; padding-left: 20px; line-height: 1.6;">
-                            <li>At least 8 characters long</li>
-                            <li>One uppercase letter (A-Z)</li>
-                            <li>One lowercase letter (a-z)</li>
-                            <li>One number (0-9)</li>
-                            <li>One special character (!@#$%^&*)</li>
-                            <li>Avoid common passwords</li>
-                        </ul>
                     </div>
-
-                    <button type="submit" class="signup-btn" id="signupBtn">
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock input-icon"></i>
+                            <input type="password" id="confirmPassword" name="confirmPassword" class="form-input password-input" placeholder="Confirm your password" required>
+                            <i class="fas fa-eye password-toggle" id="confirmPasswordToggle"></i>
+                        </div>
+                    </div>
+                    <div class="auth-options">
+                        <label class="remember-me">
+                            <input type="checkbox" name="terms" id="terms" required>
+                            I agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="auth-btn">
                         <i class="fas fa-user-plus"></i>
                         Create Account
                     </button>
                 </form>
-
-                <div class="signup-footer">
-                    <p>Already have an account? <a href="/login" class="login-link">Sign in here</a></p>
+                <div class="auth-divider">or</div>
+                <div class="social-auth">
+                    <a href="/auth/google" class="social-btn google-btn">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </a>
+                    <a href="/auth/facebook" class="social-btn facebook-btn">
+                        <i class="fab fa-facebook-f"></i>
+                        Facebook
+                    </a>
                 </div>
+            </div>
+            <div class="auth-footer">
+                <p>Already have an account? <a href="/login">Sign In</a></p>
             </div>
         </div>
     </main>
-
     <script>
         // Password toggle functionality
-        function togglePassword(fieldId) {
-            const passwordInput = document.getElementById(fieldId);
-            const toggleIcon = passwordInput.parentElement.querySelector('.password-toggle');
-            
-            if (passwordInput.type === 'password') {
-                passwordInput.type = 'text';
-                toggleIcon.classList.remove('fa-eye');
-                toggleIcon.classList.add('fa-eye-slash');
-            } else {
-                passwordInput.type = 'password';
-                toggleIcon.classList.remove('fa-eye-slash');
-                toggleIcon.classList.add('fa-eye');
-            }
-        }
-
-        // Form submission with loading state
-        document.getElementById('signupForm').addEventListener('submit', function() {
-            const signupBtn = document.getElementById('signupBtn');
-            signupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
-            signupBtn.disabled = true;
-        });
-
-        // Password matching validation
-        document.getElementById('confirmPassword').addEventListener('input', function() {
-            const password = document.getElementById('password').value;
-            const confirmPassword = this.value;
-            
-            if (password !== confirmPassword) {
-                this.style.borderColor = 'var(--error)';
-                this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            } else {
-                this.style.borderColor = 'var(--success)';
-                this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
-            }
-        });
-
-        // Form validation enhancement
-        const form = document.getElementById('signupForm');
-        const inputs = form.querySelectorAll('input[required]');
-        
-        inputs.forEach(input => {
-            input.addEventListener('invalid', function() {
-                this.style.borderColor = 'var(--error)';
-                this.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.1)';
-            });
-            
-            input.addEventListener('input', function() {
-                if (this.validity.valid) {
-                    this.style.borderColor = 'var(--success)';
-                    this.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.1)';
+        function setupPasswordToggle(inputId, toggleId) {
+            document.getElementById(toggleId).addEventListener('click', function() {
+                const passwordInput = document.getElementById(inputId);
+                const icon = this;
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
                 }
             });
+        }
+
+        setupPasswordToggle('password', 'passwordToggle');
+        setupPasswordToggle('confirmPassword', 'confirmPasswordToggle');
+
+        // Password validation
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const form = document.querySelector('form');
+
+        form.addEventListener('submit', function(e) {
+            if (password.value !== confirmPassword.value) {
+                e.preventDefault();
+                const error = document.createElement('div');
+                error.className = 'error-alert';
+                error.innerHTML = '<i class="fas fa-exclamation-circle"></i> Passwords do not match';
+                form.insertBefore(error, form.firstChild);
+                
+                setTimeout(() => {
+                    error.remove();
+                }, 3000);
+            }
         });
     </script>
 </body>

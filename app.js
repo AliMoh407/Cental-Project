@@ -105,7 +105,6 @@ app.use('/payment', paymentRoutes);
 
 // === Error Handling ===
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
   res.status(500).render('error', {
     title: 'Error - Car Rental',
     message: 'Something went wrong!',
@@ -130,25 +129,18 @@ try {
     useUnifiedTopology: true
   })
   .then(() => {
-    console.log("✅ MongoDB Atlas connected successfully");
-    
     // Create HTTP server
     const server = http.createServer(app);
     
     // Start the server after MongoDB connects
     server.listen(port, '0.0.0.0', () => {
-  console.log(`🚗 Car Rental app running at http://localhost:${port}`);
-      console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`🔗 MongoDB URI: ${process.env.MONGODB_URI ? 'Configured' : 'Not configured'}`);
-      console.log(`�� Session Secret: ${process.env.SESSION_SECRET ? 'Configured' : 'Not configured'}`);
+      console.log(`\n🚀 Server running at http://localhost:${port}`);
     });
   })
   .catch(err => {
-    console.error("❌ MongoDB connection error:", err);
     process.exit(1);
   });
 } catch (error) {
-  console.error("❌ Server startup error:", error);
   process.exit(1);
 }
 

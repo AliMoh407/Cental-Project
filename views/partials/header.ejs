@@ -6,6 +6,60 @@
     <title>Cental - Car Rental</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/header.css">
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // User menu toggle
+            const userMenuTrigger = document.querySelector('.user-menu-trigger');
+            const dropdownMenu = document.querySelector('.dropdown-menu');
+            
+            if (userMenuTrigger) {
+                userMenuTrigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('show');
+                });
+            }
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (dropdownMenu && !dropdownMenu.contains(e.target) && !userMenuTrigger.contains(e.target)) {
+                    dropdownMenu.classList.remove('show');
+                }
+            });
+
+            // Mobile menu toggle
+            function toggleMobileMenu() {
+                const mobileNav = document.getElementById('mobileNav');
+                const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+                document.body.classList.toggle('mobile-nav-open');
+                mobileNav.classList.toggle('open');
+                mobileNavOverlay.classList.toggle('show');
+            }
+
+            function closeMobileMenu() {
+                const mobileNav = document.getElementById('mobileNav');
+                const mobileNavOverlay = document.getElementById('mobileNavOverlay');
+                document.body.classList.remove('mobile-nav-open');
+                mobileNav.classList.remove('open');
+                mobileNavOverlay.classList.remove('show');
+            }
+
+            // Close menus on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (dropdownMenu) {
+                        dropdownMenu.classList.remove('show');
+                    }
+                    closeMobileMenu();
+                }
+            });
+
+            // Make functions globally available
+            window.toggleMobileMenu = toggleMobileMenu;
+            window.closeMobileMenu = closeMobileMenu;
+        });
+    </script>
 </head>
 <body>
     <header class="main-header">
@@ -70,52 +124,29 @@
             <!-- User Section -->
             <div class="user-section">
                 <% if (isLoggedIn) { %>
-                    <!-- Cart Icon -->
-                    <a href="/cart" class="cart-link">
-                        <i class="fas fa-shopping-cart"></i>
-                        <span class="cart-count" style="display: none;">0</span>
-                    </a>
-                    
-                    <!-- User Profile Dropdown -->
+                    <!-- User Menu -->
                     <div class="user-menu">
-                        <button class="user-trigger" onclick="toggleUserMenu()" aria-label="User menu">
-                            <div class="user-avatar">
-                                <i class="fas fa-user-circle"></i>
-                            </div>
-                            <div class="user-info">
-                                <span class="user-name"><%= user.name || user.email.split('@')[0] %></span>
-                                <span class="user-role"><%= isAdmin ? 'Admin' : 'Member' %></span>
-                            </div>
-                            <i class="fas fa-chevron-down dropdown-arrow"></i>
-                        </button>
-                        
-                        <div class="user-dropdown" id="userDropdown">
-                            <div class="dropdown-header">
-                                <div class="dropdown-user-info">
-                                    <i class="fas fa-user-circle"></i>
-                                    <div>
-                                        <span class="dropdown-name"><%= user.name || user.email.split('@')[0] %></span>
-                                        <span class="dropdown-email"><%= user.email %></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="dropdown-menu">
-                                <a href="/bookings" class="dropdown-item">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    <span>My Bookings</span>
+                        <div class="user-menu-trigger">
+                            <i class="fas fa-user-circle"></i>
+                            <span><%= user.name %></span>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a href="/bookings" class="dropdown-item">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>My Bookings</span>
+                            </a>
+                            <% if (isAdmin) { %>
+                                <a href="/admin/cars/add" class="dropdown-item">
+                                    <i class="fas fa-plus-circle"></i>
+                                    <span>Add Car</span>
                                 </a>
-                                <% if (isAdmin) { %>
-                                    <a href="/admin/cars/add" class="dropdown-item">
-                                        <i class="fas fa-plus-circle"></i>
-                                        <span>Add Car</span>
-                                    </a>
-                                <% } %>
-                                <div class="dropdown-divider"></div>
-                                <a href="/logout" class="dropdown-item logout-item">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    <span>Sign Out</span>
-                                </a>
-                            </div>
+                            <% } %>
+                            <div class="dropdown-divider"></div>
+                            <a href="/logout" class="dropdown-item logout-item">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Sign Out</span>
+                            </a>
                         </div>
                     </div>
                 <% } else { %>
@@ -199,23 +230,20 @@
                                 <span>Add Car</span>
                             </a></li>
                         <% } %>
-                        <li class="nav-divider"></li>
                         <li><a href="/bookings" onclick="closeMobileMenu()" class="mobile-nav-link">
                             <i class="fas fa-calendar-alt"></i>
                             <span>My Bookings</span>
                         </a></li>
-                        <li class="nav-divider"></li>
-                        <li><a href="/logout" onclick="closeMobileMenu()" class="mobile-nav-link logout-link">
+                        <li><a href="/logout" onclick="closeMobileMenu()" class="mobile-nav-link">
                             <i class="fas fa-sign-out-alt"></i>
                             <span>Sign Out</span>
                         </a></li>
                     <% } else { %>
-                        <li class="nav-divider"></li>
                         <li><a href="/login" onclick="closeMobileMenu()" class="mobile-nav-link">
                             <i class="fas fa-sign-in-alt"></i>
                             <span>Sign In</span>
                         </a></li>
-                        <li><a href="/signup" onclick="closeMobileMenu()" class="mobile-nav-link signup-link">
+                        <li><a href="/signup" onclick="closeMobileMenu()" class="mobile-nav-link">
                             <i class="fas fa-user-plus"></i>
                             <span>Sign Up</span>
                         </a></li>
@@ -428,7 +456,7 @@
         position: relative;
     }
 
-    .user-trigger {
+    .user-menu-trigger {
         display: flex;
         align-items: center;
         gap: var(--spacing-md);
@@ -441,7 +469,7 @@
         font-family: inherit;
     }
 
-    .user-trigger:hover {
+    .user-menu-trigger:hover {
         background: var(--white);
         border-color: var(--primary-blue);
         box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
@@ -480,12 +508,12 @@
         transition: transform var(--transition-fast);
     }
 
-    .user-trigger:hover .dropdown-arrow {
+    .user-menu-trigger:hover .dropdown-arrow {
         transform: rotate(180deg);
     }
 
     /* User Dropdown */
-    .user-dropdown {
+    .dropdown-menu {
         position: absolute;
         top: calc(100% + var(--spacing-sm));
         right: 0;
@@ -501,7 +529,7 @@
         z-index: 1100;
     }
 
-    .user-dropdown.show {
+    .dropdown-menu.show {
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
@@ -512,34 +540,6 @@
         border-bottom: 1px solid var(--gray-200);
         background: linear-gradient(135deg, var(--gray-50), var(--gray-100));
         border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-    }
-
-    .dropdown-user-info {
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-md);
-    }
-
-    .dropdown-user-info i {
-        font-size: 2.5rem;
-        color: var(--primary-blue);
-    }
-
-    .dropdown-name {
-        display: block;
-        font-weight: 700;
-        color: var(--gray-900);
-        font-size: 1rem;
-    }
-
-    .dropdown-email {
-        display: block;
-        font-size: 0.875rem;
-        color: var(--gray-600);
-    }
-
-    .dropdown-menu {
-        padding: var(--spacing-sm);
     }
 
     .dropdown-item {
@@ -854,7 +854,7 @@
             display: flex;
         }
         
-        .user-trigger {
+        .user-menu-trigger {
             padding: var(--spacing-sm);
             gap: var(--spacing-sm);
         }
@@ -886,42 +886,32 @@
     <script>
     // Enhanced navigation functionality
     function toggleUserMenu() {
-        const dropdown = document.getElementById('userDropdown');
+        const dropdown = document.querySelector('.dropdown-menu');
         dropdown.classList.toggle('show');
     }
 
     function toggleMobileMenu() {
         const mobileNav = document.getElementById('mobileNav');
         const overlay = document.getElementById('mobileNavOverlay');
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        
-        mobileNav.classList.toggle('active');
-        overlay.classList.toggle('active');
-        toggle.classList.toggle('active');
-        
-        // Prevent body scroll when mobile menu is open
-        document.body.style.overflow = mobileNav.classList.contains('active') ? 'hidden' : '';
+        mobileNav.classList.add('show');
+        overlay.classList.add('show');
+        document.body.style.overflow = 'hidden';
     }
 
     function closeMobileMenu() {
         const mobileNav = document.getElementById('mobileNav');
         const overlay = document.getElementById('mobileNavOverlay');
-        const toggle = document.querySelector('.mobile-menu-toggle');
-        
-        mobileNav.classList.remove('active');
-        overlay.classList.remove('active');
-        toggle.classList.remove('active');
-        
-        // Restore body scroll
+        mobileNav.classList.remove('show');
+        overlay.classList.remove('show');
         document.body.style.overflow = '';
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
         const userMenu = document.querySelector('.user-menu');
-        const dropdown = document.getElementById('userDropdown');
+        const dropdown = document.querySelector('.dropdown-menu');
         
-        if (userMenu && dropdown && !userMenu.contains(event.target)) {
+        if (userMenu && !userMenu.contains(event.target)) {
             dropdown.classList.remove('show');
         }
     });
@@ -930,7 +920,7 @@
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeMobileMenu();
-            document.getElementById('userDropdown')?.classList.remove('show');
+            document.querySelector('.dropdown-menu')?.classList.remove('show');
         }
     });
 
@@ -954,25 +944,20 @@
     // Load cart count on page load
     document.addEventListener('DOMContentLoaded', function() {
         <% if (isLoggedIn) { %>
-            loadCartCount();
+            updateCartCount();
         <% } %>
     });
 
-    async function loadCartCount() {
-        try {
-            const response = await fetch('/cart/count');
-            const result = await response.json();
-            updateCartCount(result.count);
-        } catch (error) {
-            console.error('Failed to load cart count:', error);
-        }
-    }
-
-    function updateCartCount(count) {
-        const cartCountElement = document.querySelector('.cart-count');
-        if (cartCountElement) {
-            cartCountElement.textContent = count;
-            cartCountElement.style.display = count > 0 ? 'flex' : 'none';
+    function updateCartCount() {
+        const cartCount = document.querySelector('.cart-count');
+        if (cartCount) {
+            fetch('/api/cart/count')
+                .then(response => response.json())
+                .then(data => {
+                    cartCount.textContent = data.count;
+                    cartCount.style.display = data.count > 0 ? 'block' : 'none';
+                })
+                .catch(error => console.error('Error:', error));
         }
     }
     </script>
