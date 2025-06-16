@@ -27,6 +27,21 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
+// === Health Check Endpoint ===
+app.get('/health', (req, res) => {
+    const healthcheck = {
+        uptime: process.uptime(),
+        message: 'OK',
+        timestamp: Date.now()
+    };
+    try {
+        res.send(healthcheck);
+    } catch (error) {
+        healthcheck.message = error;
+        res.status(503).send();
+    }
+});
+
 // === i18next Configuration ===
 const i18next = require('i18next');
 const i18nextMiddleware = require('i18next-http-middleware');
@@ -56,23 +71,32 @@ app.use(i18nextMiddleware.handle(i18next));
 app.use(i18nMiddleware);
 
 // === Session Configuration ===
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'your-secret-key-change-this-in-production',
-  resave: false,
-  saveUninitialized: false,
-  store: MongoStore.create({
-    mongoUrl: process.env.MONGODB_URI,
-    collectionName: 'sessions',
-    touchAfter: 24 * 3600 // Lazy session update
-  }),
-  cookie: {
-    secure: process.env.NODE_ENV === 'production', // Only use secure in production
-    httpOnly: true,
-    maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
-    sameSite: 'lax'
-  },
-  name: 'sessionId'
-}));
+const sessionConfig = {
+    secret: process.env.SESSION_SECRET || 'your-secret-key-change-this-in-production',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.MONGODB_URI,
+        collectionName: 'sessions',
+        touchAfter: 24 * 3600, // Lazy session update
+        ttl: 7 * 24 * 60 * 60 // Session TTL (7 days)
+    }),
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'lax'
+    },
+    name: 'sessionId'
+};
+
+// Only use secure cookies in production
+if (app.get('env') === 'production') {
+    app.set('trust proxy', 1); // Trust first proxy
+    sessionConfig.cookie.secure = true;
+}
+
+app.use(session(sessionConfig));
 
 // === View Engine Setup ===
 app.set('view engine', 'ejs');
@@ -95,6 +119,7 @@ app.use((req, res, next) => {
 app.use(sessionToLocals);
 
 // === Routes ===
+app.use('/health', (req, res) => res.status(200).json({ status: 'OK' }));
 app.use('/', carRoutes);
 app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
@@ -105,45 +130,66 @@ app.use('/payment', paymentRoutes);
 
 // === Error Handling ===
 app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).render('error', {
-    title: 'Error - Car Rental',
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err : {}
-  });
+    console.error('Error:', err);
+    res.status(500).render('error', {
+        title: 'Error - Car Rental',
+        message: 'Something went wrong!',
+        error: process.env.NODE_ENV === 'development' ? err : {}
+    });
 });
 
 // === 404 Handler ===
 app.use((req, res) => {
-  res.status(404).render('error', {
-    title: 'Not Found - Car Rental',
-    message: 'Page not found',
-    error: {}
-  });
+    res.status(404).render('error', {
+        title: 'Not Found - Car Rental',
+        message: 'Page not found',
+        error: {}
+    });
 });
 
 // === Database Connection and Server Start ===
 const startServer = async () => {
-  try {
-    // Connect to MongoDB
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    console.log('Connected to MongoDB');
+    try {
+        // Connect to MongoDB
+        await mongoose.connect(process.env.MONGODB_URI, {
+            useNewUrlParser: true,
+            useUnifiedTopology: true,
+            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        });
+        console.log('Connected to MongoDB');
 
-    // Create HTTP server
-    const server = http.createServer(app);
-    
-    // Start the server
-    server.listen(port, '0.0.0.0', () => {
-      console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${port}`);
-    });
+        // Create HTTP server
+        const server = http.createServer(app);
+        
+        // Start the server
+        server.listen(port, '0.0.0.0', () => {
+            console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${port}`);
+        });
 
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+        // Handle server errors
+        server.on('error', (error) => {
+            console.error('Server error:', error);
+            process.exit(1);
+        });
+
+        // Handle unhandled promise rejections
+        process.on('unhandledRejection', (err) => {
+            console.error('Unhandled Promise Rejection:', err);
+            // Don't exit the process, just log the error
+        });
+
+        // Handle uncaught exceptions
+        process.on('uncaughtException', (err) => {
+            console.error('Uncaught Exception:', err);
+            // Exit the process with error
+            process.exit(1);
+        });
+
+    } catch (error) {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    }
 };
 
 // Start the server
