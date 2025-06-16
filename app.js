@@ -1,4 +1,5 @@
-require('dotenv').config(); // Load .env variables
+// Load environment variables
+require('dotenv').config();
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -29,17 +30,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // === Health Check Endpoint ===
 app.get('/health', (req, res) => {
-    const healthcheck = {
-        uptime: process.uptime(),
-        message: 'OK',
-        timestamp: Date.now()
-    };
-    try {
-        res.send(healthcheck);
-    } catch (error) {
-        healthcheck.message = error;
-        res.status(503).send();
-    }
+    res.status(200).json({
+        status: 'OK',
+        timestamp: new Date().toISOString()
+    });
 });
 
 // === i18next Configuration ===
@@ -131,11 +125,7 @@ app.use('/payment', paymentRoutes);
 // === Error Handling ===
 app.use((err, req, res, next) => {
     console.error('Error:', err);
-    res.status(500).render('error', {
-        title: 'Error - Car Rental',
-        message: 'Something went wrong!',
-        error: process.env.NODE_ENV === 'development' ? err : {}
-    });
+    res.status(500).json({ error: 'Internal server error' });
 });
 
 // === 404 Handler ===
@@ -151,20 +141,24 @@ app.use((req, res) => {
 const startServer = async () => {
     try {
         // Connect to MongoDB
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-            socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
-        });
-        console.log('Connected to MongoDB');
+        if (process.env.MONGODB_URI) {
+            await mongoose.connect(process.env.MONGODB_URI, {
+                useNewUrlParser: true,
+                useUnifiedTopology: true
+            });
+            console.log('MongoDB Connected');
+        } else {
+            console.log('No MongoDB URI provided, skipping database connection');
+        }
 
         // Create HTTP server
         const server = http.createServer(app);
         
         // Start the server
         server.listen(port, '0.0.0.0', () => {
-            console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${port}`);
+            console.log(`Server is running on port ${port}`);
+            console.log('Environment:', process.env.NODE_ENV);
+            console.log('MongoDB URI exists:', !!process.env.MONGODB_URI);
         });
 
         // Handle server errors
@@ -175,8 +169,7 @@ const startServer = async () => {
 
         // Handle unhandled promise rejections
         process.on('unhandledRejection', (err) => {
-            console.error('Unhandled Promise Rejection:', err);
-            // Don't exit the process, just log the error
+            console.error('Unhandled Rejection:', err);
         });
 
         // Handle uncaught exceptions
@@ -187,7 +180,7 @@ const startServer = async () => {
         });
 
     } catch (error) {
-        console.error('Failed to start server:', error);
+        console.error('Startup error:', error);
         process.exit(1);
     }
 };
