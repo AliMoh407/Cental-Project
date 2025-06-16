@@ -66,7 +66,7 @@ app.use(session({
     touchAfter: 24 * 3600 // Lazy session update
   }),
   cookie: {
-    secure: false, // Must be false for HTTP
+    secure: process.env.NODE_ENV === 'production', // Only use secure in production
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     sameSite: 'lax'
@@ -96,15 +96,16 @@ app.use(sessionToLocals);
 
 // === Routes ===
 app.use('/', carRoutes);
-app.use('/', authRoutes);
+app.use('/auth', authRoutes);
 app.use('/admin', adminRoutes);
-app.use('/', bookingRoutes);
-app.use('/', contactRoutes);
+app.use('/bookings', bookingRoutes);
+app.use('/contact', contactRoutes);
 app.use('/cart', cartRoutes);
 app.use('/payment', paymentRoutes);
 
 // === Error Handling ===
 app.use((err, req, res, next) => {
+  console.error('Error:', err);
   res.status(500).render('error', {
     title: 'Error - Car Rental',
     message: 'Something went wrong!',
@@ -121,26 +122,30 @@ app.use((req, res) => {
   });
 });
 
-// === Start Server ===
-try {
-  // Connect to MongoDB first
-  mongoose.connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-  })
-  .then(() => {
+// === Database Connection and Server Start ===
+const startServer = async () => {
+  try {
+    // Connect to MongoDB
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true
+    });
+    console.log('Connected to MongoDB');
+
     // Create HTTP server
     const server = http.createServer(app);
     
-    // Start the server after MongoDB connects
+    // Start the server
     server.listen(port, '0.0.0.0', () => {
-      console.log(`\n🚀 Server running at http://localhost:${port}`);
+      console.log(`\n🚀 Server running in ${process.env.NODE_ENV} mode on port ${port}`);
     });
-  })
-  .catch(err => {
+
+  } catch (error) {
+    console.error('Failed to start server:', error);
     process.exit(1);
-  });
-} catch (error) {
-  process.exit(1);
-}
+  }
+};
+
+// Start the server
+startServer();
 
